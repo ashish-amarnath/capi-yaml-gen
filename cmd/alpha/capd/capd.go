@@ -15,3 +15,25 @@ limitations under the License.
 */
 
 package capd
+
+import (
+	"github.com/ashish-amarnath/capiyaml/cmd/alpha/constants"
+	caapdv1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
+	"sigs.k8s.io/yaml"
+)
+
+// GetDockerClusterYaml generates yaml for a docker cluster
+func GetDockerClusterYaml(name, namespace string) (string, string, error) {
+	dockerCluster := caapdv1.DockerCluster{}
+	dockerCluster.Kind = constants.DockerClusterKind
+	dockerCluster.APIVersion = constants.InfrastructureProviderAPIVersion
+	dockerCluster.Name = name
+	dockerCluster.Namespace = namespace
+
+	yamlBytes, err := yaml.Marshal(dockerCluster)
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(yamlBytes), constants.DockerClusterKind, nil
+}

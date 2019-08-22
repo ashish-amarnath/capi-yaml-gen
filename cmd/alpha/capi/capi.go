@@ -15,3 +15,35 @@ limitations under the License.
 */
 
 package capi
+
+import (
+	"sigs.k8s.io/yaml"
+
+	"github.com/ashish-amarnath/capiyaml/cmd/alpha/constants"
+	v1 "k8s.io/api/core/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
+)
+
+// GetCoreClusterYaml returns yaml for CAPI  cluster objects
+func GetCoreClusterYaml(name, namespace, infraClusterKind string) (string, error) {
+	coreCluster := clusterv1.Cluster{}
+	coreCluster.Kind = "Cluster"
+	coreCluster.Name = name
+	coreCluster.Namespace = namespace
+	coreCluster.APIVersion = constants.CoreAPIVersion
+
+	coreCluster.Spec = clusterv1.ClusterSpec{
+		InfrastructureRef: &v1.ObjectReference{
+			Kind:       infraClusterKind,
+			APIVersion: constants.InfrastructureProviderAPIVersion,
+			Name:       name,
+			Namespace:  namespace,
+		},
+	}
+
+	yamlBytes, err := yaml.Marshal(coreCluster)
+	if err != nil {
+		return "", err
+	}
+	return string(yamlBytes), nil
+}

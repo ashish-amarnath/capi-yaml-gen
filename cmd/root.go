@@ -17,7 +17,13 @@ limitations under the License.
 package cmd
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
+	"github.com/ashish-amarnath/capiyaml/cmd/alpha"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // RootCmd returns the root command for capi-yaml-gen tool
@@ -27,9 +33,26 @@ func RootCmd() *cobra.Command {
 		Short: "Yaml generating tool for CAPI and CAPI providers",
 		Long:  "Yaml generating tool for CAPI and CAPI providers",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := cmd.Help(); err != nil {
+				return err
+			}
 			return nil
 		},
 	}
+	rootCmd.AddCommand(alpha.Cmd())
 
 	return rootCmd
+}
+
+// Execute starts the process
+func Execute() {
+	if err := flag.CommandLine.Parse([]string{}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err := RootCmd().Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 }

@@ -16,6 +16,8 @@ limitations under the License.
 
 package main
 
-func main() {
+import "github.com/ashish-amarnath/capiyaml/cmd"
 
+func main() {
+	cmd.Execute()
 }
