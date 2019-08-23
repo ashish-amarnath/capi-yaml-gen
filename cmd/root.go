@@ -21,17 +21,38 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ashish-amarnath/capiyaml/cmd/alpha"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
+type printMachineParams struct {
+	count            int16
+	infraProvider    string
+	namePrefix       string
+	clusterName      string
+	clusterNamespace string
+	bsConfigName     string
+	bsConfigKind     string
+	k8sVersion       string
+	isControlPlane   bool
+}
+
+type generateOptions struct {
+	infraProvider            string
+	clusterName              string
+	clusterNamespace         string
+	bsProvider               string
+	k8sVersion               string
+	controlplaneMachineCount int16
+	workerMachineCount       int16
+}
+
 // RootCmd returns the root command for capi-yaml-gen tool
 func RootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "capi-yaml-gen",
-		Short: "Yaml generating tool for CAPI and CAPI providers",
-		Long:  "Yaml generating tool for CAPI and CAPI providers",
+		Use:   "capi-yaml",
+		Short: "Devtool to help with YAML for CAPI and CAPI providers",
+		Long:  "Devtool to help with YAML for CAPI and CAPI providers",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := cmd.Help(); err != nil {
 				return err
@@ -39,9 +60,33 @@ func RootCmd() *cobra.Command {
 			return nil
 		},
 	}
-	rootCmd.AddCommand(alpha.Cmd())
+	rootCmd.AddCommand(getGenerateCommand())
 
 	return rootCmd
+}
+
+func getGenerateCommand() *cobra.Command {
+	opts := generateOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "generate",
+		Short: "generate yaml for CAPI and its providers",
+		Long:  "generate yaml for CAPI and its providers",
+		Run: func(cmd *cobra.Command, args []string) {
+			runGenerateCommand(opts)
+		},
+	}
+
+	cmd.Flags().StringVarP(&opts.clusterName, "cluster-name", "c", "", "Name for the cluster")
+	cmd.Flags().StringVarP(&opts.clusterNamespace, "namespace", "n", "default", "Namespace where the cluster will be created")
+	cmd.Flags().StringVarP(&opts.infraProvider, "infra-provider", "i", "", "Infrastructure provider for the cluster")
+	cmd.Flags().StringVarP(&opts.bsProvider, "boostrap-provider", "b", "kubeadm", "Bootstrap provider for the cluster")
+	cmd.Flags().StringVarP(&opts.k8sVersion, "k8s-version", "k", "v1.14.2", "Version of kubernetes for the cluster")
+
+	cmd.Flags().Int16VarP(&opts.controlplaneMachineCount, "controlplane-count", "m", 1, "Number of controlplane machines in the cluster")
+	cmd.Flags().Int16VarP(&opts.workerMachineCount, "worker-count", "w", 1, "Number of worker machines in the cluster")
+
+	return cmd
 }
 
 // Execute starts the process
