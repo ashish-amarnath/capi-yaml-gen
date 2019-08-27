@@ -30,10 +30,19 @@ func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, ite
 	bsConfig.Namespace = namespace
 	bsConfig.APIVersion = constants.BootstrapProviderAPIVersion
 
-	if isControlPlane && itemNumber == 0{
+	switch {
+	case isControlPlane && itemNumber == 0:
 		bsConfig.Spec.InitConfiguration = &v1beta1.InitConfiguration{}
 		bsConfig.Spec.ClusterConfiguration = &v1beta1.ClusterConfiguration{}
-	} else {
+	case isControlPlane && itemNumber > 0:
+		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{
+			ControlPlane: &v1beta1.JoinControlPlane{
+				v1beta1.APIEndpoint{
+					BindPort:         6443,
+				},
+			},
+		}
+	default:
 		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{}
 	}
 
