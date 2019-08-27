@@ -17,16 +17,15 @@ limitations under the License.
 package capi
 
 import (
-	"sigs.k8s.io/yaml"
-
 	"github.com/ashish-amarnath/capiyaml/cmd/constants"
+	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
 	v1 "k8s.io/api/core/v1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
 )
 
 // GetCoreClusterYaml returns yaml for CAPI cluster objects
 func GetCoreClusterYaml(name, namespace, infraClusterKind string) (string, error) {
-	coreCluster := clusterv1.Cluster{}
+	coreCluster := &clusterv1.Cluster{}
 	coreCluster.Kind = constants.CoreClusterKind
 	coreCluster.Name = name
 	coreCluster.Namespace = namespace
@@ -40,18 +39,17 @@ func GetCoreClusterYaml(name, namespace, infraClusterKind string) (string, error
 			Namespace:  namespace,
 		},
 	}
-
-	yamlBytes, err := yaml.Marshal(coreCluster)
+	yamlBytes, err := serialize.MarshalToYAML(coreCluster)
 	if err != nil {
 		return "", err
 	}
 	return string(yamlBytes), nil
 }
 
-// GetCoreControlplaneMachineYaml returns yaml for CAPI controlplane machine object
-func GetCoreControlplaneMachineYaml(name, namespace, bsConfigName, bsConfigKind, version, clusterOwner,
+// GetCoreMachineYaml returns yaml for CAPI machine object configured to be a controlplane or not
+func GetCoreMachineYaml(name, namespace, bsConfigName, bsConfigKind, version, clusterOwner,
 	infraMachineKind string, controlPlane bool) (string, error) {
-	coreMachine := clusterv1.Machine{}
+	coreMachine := &clusterv1.Machine{}
 	coreMachine.Kind = constants.CoreMachineKind
 	coreMachine.APIVersion = constants.CoreAPIVersion
 	coreMachine.Name = name
@@ -81,7 +79,7 @@ func GetCoreControlplaneMachineYaml(name, namespace, bsConfigName, bsConfigKind,
 		},
 	}
 
-	yamlBytes, err := yaml.Marshal(coreMachine)
+	yamlBytes, err := serialize.MarshalToYAML(coreMachine)
 	if err != nil {
 		return "", err
 	}

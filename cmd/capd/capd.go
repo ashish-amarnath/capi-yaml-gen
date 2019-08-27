@@ -18,20 +18,19 @@ package capd
 
 import (
 	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	caapdv1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
-
-	"sigs.k8s.io/yaml"
+	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	dockerv1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
 )
 
 // GetDockerClusterYaml generates yaml for a docker cluster
 func GetDockerClusterYaml(name, namespace string) (string, string, error) {
-	dockerCluster := caapdv1.DockerCluster{}
-	dockerCluster.Kind = constants.DockerClusterKind
-	dockerCluster.APIVersion = constants.InfrastructureProviderAPIVersion
+	dockerCluster := &dockerv1.DockerCluster{}
+	dockerCluster.Kind = dockerCluster.Kind
+	dockerCluster.APIVersion = dockerCluster.GroupVersionKind().GroupVersion().String()
 	dockerCluster.Name = name
 	dockerCluster.Namespace = namespace
 
-	yamlBytes, err := yaml.Marshal(dockerCluster)
+	yamlBytes, err := serialize.MarshalToYAML(dockerCluster)
 	if err != nil {
 		return "", "", err
 	}
@@ -39,15 +38,15 @@ func GetDockerClusterYaml(name, namespace string) (string, string, error) {
 	return string(yamlBytes), constants.DockerClusterKind, nil
 }
 
-// GetDockerControlplaneMachineYaml generates yaml for a docker controlplane machine
-func GetDockerControlplaneMachineYaml(name, namespace string) (string, string, error) {
-	dockerMachine := &caapdv1.DockerMachine{}
+// GetDockerMachineYaml generates yaml for a docker controlplane machine
+func GetDockerMachineYaml(name, namespace string) (string, string, error) {
+	dockerMachine := &dockerv1.DockerMachine{}
 	dockerMachine.Kind = constants.DockerMachineKind
 	dockerMachine.APIVersion = constants.InfrastructureProviderAPIVersion
 	dockerMachine.Name = name
 	dockerMachine.Namespace = namespace
 
-	yamlBytes, err := yaml.Marshal(dockerMachine)
+	yamlBytes, err := serialize.MarshalToYAML(dockerMachine)
 	if err != nil {
 		return "", "", err
 	}

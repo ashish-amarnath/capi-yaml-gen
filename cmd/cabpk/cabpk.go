@@ -18,34 +18,18 @@ package cabpk
 
 import (
 	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	"gopkg.in/yaml.v2"
-	cabpkv1alpha2 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
-	kubeadmv1beta1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
+	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	infrav1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 )
 
 // GetBootstrapProviderConfig generates kubeadm bootstrap provider config
-func GetBootstrapProviderConfig(name, namespace, k8sVersion string) (string, string, error) {
-	bsConfig := cabpkv1alpha2.KubeadmConfig{}
+func GetBootstrapProviderConfig(name, namespace string) (string, string, error) {
+	bsConfig := &infrav1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
 	bsConfig.APIVersion = constants.BootstrapProviderAPIVersion
-	bsConfig.Spec.ClusterConfiguration = &kubeadmv1beta1.ClusterConfiguration{
-		CertificatesDir:      "/etc/kubernetes/pki",
-		ControlPlaneEndpoint: "??unknown??",
-		DNS: kubeadmv1beta1.DNS{
-			Type: "",
-		},
-		ImageRepository:   "",
-		KubernetesVersion: k8sVersion,
-		Networking: kubeadmv1beta1.Networking{
-			DNSDomain:     "",
-			PodSubnet:     "",
-			ServiceSubnet: "",
-		},
-		Etcd: kubeadmv1beta1.Etcd{},
-	}
 
-	yamlBytes, err := yaml.Marshal(bsConfig)
+	yamlBytes, err := serialize.MarshalToYAML(bsConfig)
 	if err != nil {
 		return "", "", err
 	}
