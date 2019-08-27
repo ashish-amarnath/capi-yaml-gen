@@ -43,7 +43,8 @@ func getInfraClusterYaml(infraProvider, cName, cNamespace string) (string, strin
 func getBoostrapProviderConfigYaml(bsProvider, bsConfigName, cNamespace, k8sVersion string) (string, string, error) {
 	switch strings.ToLower((bsProvider)) {
 	case "kubeadm":
-		return cabpk.GetBootstrapProviderConfig(bsConfigName, cNamespace, k8sVersion)
+		// TODO: use k8sversion but have to figure out if we need ClusterConfig/InitConfig or JoinConfig
+		return cabpk.GetBootstrapProviderConfig(bsConfigName, cNamespace)
 	default:
 		return "", "", fmt.Errorf("Unsupported bootstrap provider %q", bsProvider)
 	}
@@ -55,7 +56,7 @@ func getInfraMachineYaml(infraProvider, mName, mNamespace string) (string, strin
 
 	switch strings.ToLower(infraProvider) {
 	case "docker":
-		infraCPMachineYaml, infraCPMachineKind, err = capd.GetDockerControlplaneMachineYaml(mName, mNamespace)
+		infraCPMachineYaml, infraCPMachineKind, err = capd.GetDockerMachineYaml(mName, mNamespace)
 	default:
 		return "", "", fmt.Errorf("Unsupported machine infrastructure provider %q", infraProvider)
 	}
@@ -74,7 +75,7 @@ func printMachineYaml(p printMachineParams) {
 			os.Exit(1)
 		}
 
-		coreControlplaneMachineYaml, err := capi.GetCoreControlplaneMachineYaml(
+		coreControlplaneMachineYaml, err := capi.GetCoreMachineYaml(
 			machineName, p.clusterNamespace, p.bsConfigName, p.bsConfigKind, p.k8sVersion,
 			p.clusterName, infraMachineKind, p.isControlPlane)
 		if err != nil {
@@ -104,14 +105,17 @@ func runGenerateCommand(opts generateOptions) {
 	bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(opts.clusterName))
 	bsConfigYaml, bsConfigKind, err := getBoostrapProviderConfigYaml(opts.bsProvider, bsConfigName, opts.clusterNamespace, opts.k8sVersion)
 
+	controlPlaneConfigName := fmt.Sprintf("%s-control-plane-config", strings.ToLower(opts.clusterName))
+	controlPlaneConfig, kind, err := getBoostrapProviderConfigYaml(opts.bsProvider, controlPlaneConfigName, opts.clusterNamespace, opts.k8sVersion)
+
 	pcmControlplane := printMachineParams{
 		count:            opts.controlplaneMachineCount,
 		infraProvider:    opts.infraProvider,
 		namePrefix:       "controlplane",
 		clusterName:      opts.clusterName,
 		clusterNamespace: opts.clusterNamespace,
-		bsConfigName:     bsConfigName,
-		bsConfigKind:     bsConfigKind,
+		bsConfigName:     controlPlaneConfigName,
+		bsConfigKind:     kind,
 		k8sVersion:       opts.k8sVersion,
 		isControlPlane:   true,
 	}
@@ -125,7 +129,7 @@ func runGenerateCommand(opts generateOptions) {
 		bsConfigName:     bsConfigName,
 		bsConfigKind:     bsConfigKind,
 		k8sVersion:       opts.k8sVersion,
-		isControlPlane:   true,
+		isControlPlane:   false,
 	}
 
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
@@ -133,9 +137,10 @@ func runGenerateCommand(opts generateOptions) {
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(coreClusterYaml))
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(infraClusterYaml))
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(bsConfigYaml))
+	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
+	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(controlPlaneConfig))
+	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	printMachineYaml(pcmControlplane)
 	printMachineYaml(pmcWorker)
 }
