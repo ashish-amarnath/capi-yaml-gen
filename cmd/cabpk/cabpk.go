@@ -20,14 +20,31 @@ import (
 	"github.com/ashish-amarnath/capiyaml/cmd/constants"
 	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
 	infrav1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
+	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
 )
 
 // GetBootstrapProviderConfig generates kubeadm bootstrap provider config
-func GetBootstrapProviderConfig(name, namespace string) (string, string, error) {
+func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) (string, string, error) {
 	bsConfig := &infrav1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
 	bsConfig.APIVersion = constants.BootstrapProviderAPIVersion
+
+	switch {
+	case isControlPlane && itemNumber == 0:
+		bsConfig.Spec.InitConfiguration = &v1beta1.InitConfiguration{}
+		bsConfig.Spec.ClusterConfiguration = &v1beta1.ClusterConfiguration{}
+	case isControlPlane && itemNumber > 0:
+		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{
+			ControlPlane: &v1beta1.JoinControlPlane{
+				v1beta1.APIEndpoint{
+					BindPort:         6443,
+				},
+			},
+		}
+	default:
+		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{}
+	}
 
 	yamlBytes, err := serialize.MarshalToYAML(bsConfig)
 	if err != nil {

@@ -26,13 +26,12 @@ import (
 )
 
 type printMachineParams struct {
-	count            int16
+	count            int
 	infraProvider    string
+	bootstrapProvider string
 	namePrefix       string
 	clusterName      string
 	clusterNamespace string
-	bsConfigName     string
-	bsConfigKind     string
 	k8sVersion       string
 	isControlPlane   bool
 }
@@ -43,8 +42,8 @@ type generateOptions struct {
 	clusterNamespace         string
 	bsProvider               string
 	k8sVersion               string
-	controlplaneMachineCount int16
-	workerMachineCount       int16
+	controlplaneMachineCount int
+	workerMachineCount       int
 }
 
 // RootCmd returns the root command for capi-yaml-gen tool
@@ -83,8 +82,8 @@ func getGenerateCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.bsProvider, "boostrap-provider", "b", "kubeadm", "Bootstrap provider for the cluster")
 	cmd.Flags().StringVarP(&opts.k8sVersion, "k8s-version", "k", "v1.14.2", "Version of kubernetes for the cluster")
 
-	cmd.Flags().Int16VarP(&opts.controlplaneMachineCount, "controlplane-count", "m", 1, "Number of controlplane machines in the cluster")
-	cmd.Flags().Int16VarP(&opts.workerMachineCount, "worker-count", "w", 1, "Number of worker machines in the cluster")
+	cmd.Flags().IntVarP(&opts.controlplaneMachineCount, "controlplane-count", "m", 1, "Number of controlplane machines in the cluster")
+	cmd.Flags().IntVarP(&opts.workerMachineCount, "worker-count", "w", 1, "Number of worker machines in the cluster")
 
 	return cmd
 }
