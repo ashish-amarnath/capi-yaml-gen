@@ -13,3 +13,6 @@
 
 # executables
 capi-yaml
+
+# editor files
+.idea

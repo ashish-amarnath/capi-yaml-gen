@@ -77,9 +77,9 @@ func getGenerateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.clusterName, "cluster-name", "c", "", "Name for the cluster")
+	cmd.Flags().StringVarP(&opts.clusterName, "cluster-name", "c", "my-cluster", "Name for the cluster")
 	cmd.Flags().StringVarP(&opts.clusterNamespace, "namespace", "n", "default", "Namespace where the cluster will be created")
-	cmd.Flags().StringVarP(&opts.infraProvider, "infra-provider", "i", "", "Infrastructure provider for the cluster")
+	cmd.Flags().StringVarP(&opts.infraProvider, "infra-provider", "i", "docker", "Infrastructure provider for the cluster")
 	cmd.Flags().StringVarP(&opts.bsProvider, "boostrap-provider", "b", "kubeadm", "Bootstrap provider for the cluster")
 	cmd.Flags().StringVarP(&opts.k8sVersion, "k8s-version", "k", "v1.14.2", "Version of kubernetes for the cluster")
 
