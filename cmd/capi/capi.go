@@ -58,7 +58,7 @@ func GetCoreMachineYaml(name, namespace, bsConfigName, bsConfigKind, version, cl
 		clusterv1.MachineClusterLabelName: clusterOwner,
 	}
 	if controlPlane {
-		lables[clusterv1.MachineControlPlaneLabelName] = "controlplane"
+		lables[clusterv1.MachineControlPlaneLabelName] = "true"
 	}
 	coreMachine.SetLabels(lables)
 

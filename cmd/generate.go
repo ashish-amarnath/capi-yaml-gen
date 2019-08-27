@@ -40,11 +40,11 @@ func getInfraClusterYaml(infraProvider, cName, cNamespace string) (string, strin
 	return infraClusterYaml, infraClusterKind, err
 }
 
-func getBoostrapProviderConfigYaml(bsProvider, bsConfigName, cNamespace, k8sVersion string) (string, string, error) {
+func getBoostrapProviderConfigYaml(bsProvider, bsConfigName, cNamespace, k8sVersion string, isControlPlane bool, itemNumber int) (string, string, error) {
 	switch strings.ToLower((bsProvider)) {
 	case "kubeadm":
 		// TODO: use k8sversion but have to figure out if we need ClusterConfig/InitConfig or JoinConfig
-		return cabpk.GetBootstrapProviderConfig(bsConfigName, cNamespace)
+		return cabpk.GetBootstrapProviderConfig(bsConfigName, cNamespace, isControlPlane, itemNumber)
 	default:
 		return "", "", fmt.Errorf("Unsupported bootstrap provider %q", bsProvider)
 	}
@@ -65,26 +65,31 @@ func getInfraMachineYaml(infraProvider, mName, mNamespace string) (string, strin
 }
 
 func printMachineYaml(p printMachineParams) {
-	for i := int16(0); i < p.count; i++ {
+	for i := 0; i < p.count; i++ {
 		machineName := fmt.Sprintf("%s-%d", p.namePrefix, i)
 
-		infraControlplaneMachineYaml, infraMachineKind, err := getInfraMachineYaml(p.infraProvider,
+		bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(machineName))
+		bsConfigYAML, bsConfigKind, err := getBoostrapProviderConfigYaml(p.bootstrapProvider, bsConfigName, p.clusterNamespace, p.k8sVersion, p.isControlPlane, i)
+
+		infraMachineYaml, infraMachineKind, err := getInfraMachineYaml(p.infraProvider,
 			machineName, p.clusterNamespace)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to generate yaml for infrastructure machine, %v\n", err)
 			os.Exit(1)
 		}
 
-		coreControlplaneMachineYaml, err := capi.GetCoreMachineYaml(
-			machineName, p.clusterNamespace, p.bsConfigName, p.bsConfigKind, p.k8sVersion,
+		coreMachineYaml, err := capi.GetCoreMachineYaml(
+			machineName, p.clusterNamespace, bsConfigName, bsConfigKind, p.k8sVersion,
 			p.clusterName, infraMachineKind, p.isControlPlane)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to generate yaml for core machine, %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stdout, strings.TrimSpace(infraControlplaneMachineYaml))
+		fmt.Fprintf(os.Stdout, strings.TrimSpace(infraMachineYaml))
 		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-		fmt.Fprintf(os.Stdout, strings.TrimSpace(coreControlplaneMachineYaml))
+		fmt.Fprintf(os.Stdout, strings.TrimSpace(coreMachineYaml))
+		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
+		fmt.Fprintf(os.Stdout, strings.TrimSpace(bsConfigYAML))
 		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	}
 }
@@ -102,20 +107,13 @@ func runGenerateCommand(opts generateOptions) {
 		os.Exit(1)
 	}
 
-	bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(opts.clusterName))
-	bsConfigYaml, bsConfigKind, err := getBoostrapProviderConfigYaml(opts.bsProvider, bsConfigName, opts.clusterNamespace, opts.k8sVersion)
-
-	controlPlaneConfigName := fmt.Sprintf("%s-control-plane-config", strings.ToLower(opts.clusterName))
-	controlPlaneConfig, kind, err := getBoostrapProviderConfigYaml(opts.bsProvider, controlPlaneConfigName, opts.clusterNamespace, opts.k8sVersion)
-
 	pcmControlplane := printMachineParams{
 		count:            opts.controlplaneMachineCount,
 		infraProvider:    opts.infraProvider,
+		bootstrapProvider: opts.bsProvider,
 		namePrefix:       "controlplane",
 		clusterName:      opts.clusterName,
 		clusterNamespace: opts.clusterNamespace,
-		bsConfigName:     controlPlaneConfigName,
-		bsConfigKind:     kind,
 		k8sVersion:       opts.k8sVersion,
 		isControlPlane:   true,
 	}
@@ -123,11 +121,10 @@ func runGenerateCommand(opts generateOptions) {
 	pmcWorker := printMachineParams{
 		count:            opts.workerMachineCount,
 		infraProvider:    opts.infraProvider,
+		bootstrapProvider: opts.bsProvider,
 		namePrefix:       "worker",
 		clusterName:      opts.clusterName,
 		clusterNamespace: opts.clusterNamespace,
-		bsConfigName:     bsConfigName,
-		bsConfigKind:     bsConfigKind,
 		k8sVersion:       opts.k8sVersion,
 		isControlPlane:   false,
 	}
@@ -136,10 +133,6 @@ func runGenerateCommand(opts generateOptions) {
 	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(infraClusterYaml))
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(coreClusterYaml))
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(bsConfigYaml))
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(controlPlaneConfig))
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
 	printMachineYaml(pcmControlplane)
 	printMachineYaml(pmcWorker)
