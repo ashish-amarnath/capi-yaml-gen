@@ -26,84 +26,6 @@ status:
   infrastructureReady: false
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-kind: DockerCluster
-metadata:
-  creationTimestamp: null
-  name: test-cluster
-  namespace: awesome-ns
-spec: {}
-status:
-  ready: false
----
-typemeta:
-  kind: ""
-  apiversion: bootstrap.cluster.x-k8s.io/v1alpha2
-objectmeta:
-  name: test-cluster-config
-  generatename: ""
-  namespace: awesome-ns
-  selflink: ""
-  uid: ""
-  resourceversion: ""
-  generation: 0
-  creationtimestamp: "0001-01-01T00:00:00Z"
-  deletiontimestamp: null
-  deletiongraceperiodseconds: null
-  labels: {}
-  annotations: {}
-  ownerreferences: []
-  finalizers: []
-  clustername: ""
-  managedfields: []
-spec:
-  clusterconfiguration:
-    typemeta:
-      kind: ""
-      apiversion: ""
-    etcd:
-      local: null
-      external: null
-    networking:
-      servicesubnet: ""
-      podsubnet: ""
-      dnsdomain: ""
-    kubernetesversion: v1.14.2
-    controlplaneendpoint: ??unknown??
-    apiserver:
-      controlplanecomponent:
-        extraargs: {}
-        extravolumes: []
-      certsans: []
-      timeoutforcontrolplane: null
-    controllermanager:
-      extraargs: {}
-      extravolumes: []
-    scheduler:
-      extraargs: {}
-      extravolumes: []
-    dns:
-      type: ""
-      imagemeta:
-        imagerepository: ""
-        imagetag: ""
-    certificatesdir: /etc/kubernetes/pki
-    imagerepository: ""
-    usehyperkubeimage: false
-    featuregates: {}
-    clustername: ""
-  initconfiguration: null
-  joinconfiguration: null
-  files: []
-  prekubeadmcommands: []
-  postkubeadmcommands: []
-  users: []
-  ntp: null
-  format: ""
-status:
-  ready: false
-  bootstrapdata: []
-  errorreason: ""
-  errormessage: ""apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
   creationTimestamp: null
@@ -119,7 +41,7 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
+    cluster.x-k8s.io/control-plane: "true"
   name: controlplane-0
   namespace: awesome-ns
 spec:
@@ -127,7 +49,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: controlplane-0-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -139,6 +61,35 @@ status:
   bootstrapReady: false
   infrastructureReady: false
 ---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: controlplane-0-config
+  namespace: awesome-ns
+spec:
+  clusterConfiguration:
+    apiServer: {}
+    certificatesDir: ""
+    controlPlaneEndpoint: ""
+    controllerManager: {}
+    dns:
+      type: ""
+    etcd: {}
+    imageRepository: ""
+    kubernetesVersion: ""
+    networking:
+      dnsDomain: ""
+      podSubnet: ""
+      serviceSubnet: ""
+    scheduler: {}
+  initConfiguration:
+    localAPIEndpoint:
+      advertiseAddress: ""
+      bindPort: 0
+    nodeRegistration: {}
+status: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
@@ -155,7 +106,7 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
+    cluster.x-k8s.io/control-plane: "true"
   name: controlplane-1
   namespace: awesome-ns
 spec:
@@ -163,7 +114,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: controlplane-1-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -175,6 +126,22 @@ status:
   bootstrapReady: false
   infrastructureReady: false
 ---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: controlplane-1-config
+  namespace: awesome-ns
+spec:
+  joinConfiguration:
+    controlPlane:
+      localAPIEndpoint:
+        advertiseAddress: ""
+        bindPort: 6443
+    discovery: {}
+    nodeRegistration: {}
+status: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
@@ -191,7 +158,7 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
+    cluster.x-k8s.io/control-plane: "true"
   name: controlplane-2
   namespace: awesome-ns
 spec:
@@ -199,7 +166,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: controlplane-2-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -211,6 +178,22 @@ status:
   bootstrapReady: false
   infrastructureReady: false
 ---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: controlplane-2-config
+  namespace: awesome-ns
+spec:
+  joinConfiguration:
+    controlPlane:
+      localAPIEndpoint:
+        advertiseAddress: ""
+        bindPort: 6443
+    discovery: {}
+    nodeRegistration: {}
+status: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
@@ -227,7 +210,6 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
   name: worker-0
   namespace: awesome-ns
 spec:
@@ -235,7 +217,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: worker-0-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -247,6 +229,18 @@ status:
   bootstrapReady: false
   infrastructureReady: false
 ---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: worker-0-config
+  namespace: awesome-ns
+spec:
+  joinConfiguration:
+    discovery: {}
+    nodeRegistration: {}
+status: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
@@ -263,7 +257,6 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
   name: worker-1
   namespace: awesome-ns
 spec:
@@ -271,7 +264,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: worker-1-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -283,6 +276,18 @@ status:
   bootstrapReady: false
   infrastructureReady: false
 ---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: worker-1-config
+  namespace: awesome-ns
+spec:
+  joinConfiguration:
+    discovery: {}
+    nodeRegistration: {}
+status: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
 metadata:
@@ -299,7 +304,6 @@ metadata:
   creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: test-cluster
-    cluster.x-k8s.io/control-plane: controlplane
   name: worker-2
   namespace: awesome-ns
 spec:
@@ -307,7 +311,7 @@ spec:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
       kind: KubeadmConfig
-      name: test-cluster-config
+      name: worker-2-config
       namespace: awesome-ns
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
@@ -318,4 +322,16 @@ spec:
 status:
   bootstrapReady: false
   infrastructureReady: false
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: worker-2-config
+  namespace: awesome-ns
+spec:
+  joinConfiguration:
+    discovery: {}
+    nodeRegistration: {}
+status: {}
 ---
