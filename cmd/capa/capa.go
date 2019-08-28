@@ -23,7 +23,7 @@ import (
 )
 
 // GetAWSClusterYaml generates yaml for an AWS cluster
-func GetAWSClusterYaml(name, namespace string) (string, string, error) {
+func GetAWSClusterYaml(name, namespace string) (string, string, string, error) {
 	awsCluster := &infrav1.AWSCluster{}
 
 	awsCluster.Kind = constants.AWSClusterKind
@@ -33,14 +33,14 @@ func GetAWSClusterYaml(name, namespace string) (string, string, error) {
 
 	yamlBytes, err := serialize.MarshalToYAML(awsCluster)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return string(yamlBytes), awsCluster.Kind, nil
+	return string(yamlBytes), awsCluster.Kind, awsCluster.APIVersion, nil
 }
 
 // GetAWSMachineYaml generates yaml for a docker controlplane machine
-func GetAWSMachineYaml(name, namespace string) (string, string, error) {
+func GetAWSMachineYaml(name, namespace string) (string, string, string, error) {
 	awsMachine := &infrav1.AWSMachine{}
 	awsMachine.Kind = constants.AWSMachineKind
 	awsMachine.APIVersion = infrav1.GroupVersion.String()
@@ -49,8 +49,8 @@ func GetAWSMachineYaml(name, namespace string) (string, string, error) {
 
 	yamlBytes, err := serialize.MarshalToYAML(awsMachine)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return string(yamlBytes), awsMachine.Kind, nil
+	return string(yamlBytes), awsMachine.Kind, awsMachine.APIVersion, nil
 }

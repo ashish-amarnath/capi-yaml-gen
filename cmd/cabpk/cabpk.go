@@ -24,11 +24,11 @@ import (
 )
 
 // GetBootstrapProviderConfig generates kubeadm bootstrap provider config
-func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) (string, string, error) {
+func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) (string, string, string, error) {
 	bsConfig := &infrav1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
-	bsConfig.APIVersion = constants.BootstrapProviderAPIVersion
+	bsConfig.APIVersion = infrav1.GroupVersion.String()
 
 	switch {
 	case isControlPlane && itemNumber == 0:
@@ -38,7 +38,7 @@ func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, ite
 		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{
 			ControlPlane: &v1beta1.JoinControlPlane{
 				v1beta1.APIEndpoint{
-					BindPort:         6443,
+					BindPort: 6443,
 				},
 			},
 		}
@@ -48,8 +48,8 @@ func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, ite
 
 	yamlBytes, err := serialize.MarshalToYAML(bsConfig)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return string(yamlBytes), constants.KubeadmConfigKind, nil
+	return string(yamlBytes), constants.KubeadmConfigKind, bsConfig.APIVersion, nil
 }
