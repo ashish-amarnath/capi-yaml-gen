@@ -25,7 +25,7 @@ import (
 // GetDockerClusterYaml generates yaml for a docker cluster
 func GetDockerClusterYaml(name, namespace string) (string, string, error) {
 	dockerCluster := &dockerv1.DockerCluster{}
-	dockerCluster.Kind = dockerCluster.Kind
+	dockerCluster.Kind = constants.DockerClusterKind
 	dockerCluster.APIVersion = dockerCluster.GroupVersionKind().GroupVersion().String()
 	dockerCluster.Name = name
 	dockerCluster.Namespace = namespace
