@@ -26,6 +26,9 @@ const (
 	DockerClusterKind = "DockerCluster"
 	DockerMachineKind = "DockerMachine"
 
+	AWSClusterKind = "AWSCluster"
+	AWSMachineKind = "AWSMachine"
+
 	KubeadmConfigKind = "KubeadmConfig"
 
 	YAMLSeperator = "\n---\n"
