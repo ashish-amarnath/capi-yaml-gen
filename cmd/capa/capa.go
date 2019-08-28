@@ -15,3 +15,42 @@ limitations under the License.
 */
 
 package capa
+
+import (
+	"github.com/ashish-amarnath/capiyaml/cmd/constants"
+	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
+)
+
+// GetAWSClusterYaml generates yaml for an AWS cluster
+func GetAWSClusterYaml(name, namespace string) (string, string, error) {
+	awsCluster := &infrav1.AWSCluster{}
+
+	awsCluster.Kind = constants.AWSClusterKind
+	awsCluster.APIVersion = infrav1.GroupVersion.String()
+	awsCluster.Name = name
+	awsCluster.Namespace = namespace
+
+	yamlBytes, err := serialize.MarshalToYAML(awsCluster)
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(yamlBytes), awsCluster.Kind, nil
+}
+
+// GetAWSMachineYaml generates yaml for a docker controlplane machine
+func GetAWSMachineYaml(name, namespace string) (string, string, error) {
+	awsMachine := &infrav1.AWSMachine{}
+	awsMachine.Kind = constants.AWSMachineKind
+	awsMachine.APIVersion = infrav1.GroupVersion.String()
+	awsMachine.Name = name
+	awsMachine.Namespace = namespace
+
+	yamlBytes, err := serialize.MarshalToYAML(awsMachine)
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(yamlBytes), awsMachine.Kind, nil
+}

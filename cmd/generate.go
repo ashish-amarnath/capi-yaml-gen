@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/ashish-amarnath/capiyaml/cmd/cabpk"
+	"github.com/ashish-amarnath/capiyaml/cmd/capa"
 	"github.com/ashish-amarnath/capiyaml/cmd/capd"
 	"github.com/ashish-amarnath/capiyaml/cmd/capi"
 	"github.com/ashish-amarnath/capiyaml/cmd/constants"
@@ -33,6 +34,8 @@ func getInfraClusterYaml(infraProvider, cName, cNamespace string) (string, strin
 	switch strings.ToLower(infraProvider) {
 	case "docker":
 		infraClusterYaml, infraClusterKind, err = capd.GetDockerClusterYaml(cName, cNamespace)
+	case "aws":
+		infraClusterYaml, infraClusterKind, err = capa.GetAWSClusterYaml(cName, cNamespace)
 	default:
 		return "", "", fmt.Errorf("Unsupported cluster infrastructure provider %q", infraProvider)
 	}
@@ -57,6 +60,8 @@ func getInfraMachineYaml(infraProvider, mName, mNamespace string) (string, strin
 	switch strings.ToLower(infraProvider) {
 	case "docker":
 		infraCPMachineYaml, infraCPMachineKind, err = capd.GetDockerMachineYaml(mName, mNamespace)
+	case "aws":
+		infraCPMachineYaml, infraCPMachineKind, err = capa.GetAWSMachineYaml(mName, mNamespace)
 	default:
 		return "", "", fmt.Errorf("Unsupported machine infrastructure provider %q", infraProvider)
 	}
@@ -108,25 +113,25 @@ func runGenerateCommand(opts generateOptions) {
 	}
 
 	pcmControlplane := printMachineParams{
-		count:            opts.controlplaneMachineCount,
-		infraProvider:    opts.infraProvider,
+		count:             opts.controlplaneMachineCount,
+		infraProvider:     opts.infraProvider,
 		bootstrapProvider: opts.bsProvider,
-		namePrefix:       "controlplane",
-		clusterName:      opts.clusterName,
-		clusterNamespace: opts.clusterNamespace,
-		k8sVersion:       opts.k8sVersion,
-		isControlPlane:   true,
+		namePrefix:        "controlplane",
+		clusterName:       opts.clusterName,
+		clusterNamespace:  opts.clusterNamespace,
+		k8sVersion:        opts.k8sVersion,
+		isControlPlane:    true,
 	}
 
 	pmcWorker := printMachineParams{
-		count:            opts.workerMachineCount,
-		infraProvider:    opts.infraProvider,
+		count:             opts.workerMachineCount,
+		infraProvider:     opts.infraProvider,
 		bootstrapProvider: opts.bsProvider,
-		namePrefix:       "worker",
-		clusterName:      opts.clusterName,
-		clusterNamespace: opts.clusterNamespace,
-		k8sVersion:       opts.k8sVersion,
-		isControlPlane:   false,
+		namePrefix:        "worker",
+		clusterName:       opts.clusterName,
+		clusterNamespace:  opts.clusterNamespace,
+		k8sVersion:        opts.k8sVersion,
+		isControlPlane:    false,
 	}
 
 	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
