@@ -13,16 +13,29 @@ import (
 var update = flag.Bool("update", false, "update golden files")
 
 func TestGoldenFiles(t *testing.T) {
-	testcases := []struct{
-		name string
+	testcases := []struct {
+		name       string
 		goldenfile string
-		options generateOptions
+		options    generateOptions
 	}{
 		{
 			"./capi-yaml-gen generate",
-			"default",
+			"default-capd",
 			generateOptions{
 				infraProvider:            defaultInfrastructureProvider,
+				clusterName:              defaultClusterName,
+				clusterNamespace:         defaultNamespace,
+				bsProvider:               defaultBootstrapProvider,
+				k8sVersion:               defaultVersion,
+				controlplaneMachineCount: defaultControlPlaneCount,
+				workerMachineCount:       defaultWorkerCount,
+			},
+		},
+		{
+			"./capi-yaml-gen generate --infra-provider aws",
+			"default-capa",
+			generateOptions{
+				infraProvider:            "aws",
 				clusterName:              defaultClusterName,
 				clusterNamespace:         defaultNamespace,
 				bsProvider:               defaultBootstrapProvider,
@@ -34,7 +47,7 @@ func TestGoldenFiles(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T){
+		t.Run(tc.name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			if err := runGenerateCommand(tc.options, &stdout, &stderr); err != nil {
 				t.Fatal(err)
@@ -62,6 +75,6 @@ func TestGoldenFiles(t *testing.T) {
 	}
 }
 
-func goldenFileName(name string)string {
+func goldenFileName(name string) string {
 	return fmt.Sprintf("testdata/%s.golden", name)
 }
