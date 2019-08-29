@@ -17,8 +17,8 @@ limitations under the License.
 package cabpk
 
 import (
-	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 	infrav1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
 )
