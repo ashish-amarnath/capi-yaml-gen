@@ -26,25 +26,14 @@ import (
 )
 
 const (
-	defaultClusterName = "my-cluster"
-	defaultNamespace = "default"
+	defaultClusterName            = "my-cluster"
+	defaultNamespace              = "default"
 	defaultInfrastructureProvider = "docker"
-	defaultBootstrapProvider = "kubeadm"
-	defaultVersion = "v1.14.2"
-	defaultControlPlaneCount = 1
-	defaultWorkerCount = 1
+	defaultBootstrapProvider      = "kubeadm"
+	defaultVersion                = "v1.14.2"
+	defaultControlPlaneCount      = 1
+	defaultWorkerCount            = 1
 )
-
-type printMachineParams struct {
-	count            int
-	infraProvider    string
-	bootstrapProvider string
-	namePrefix       string
-	clusterName      string
-	clusterNamespace string
-	k8sVersion       string
-	isControlPlane   bool
-}
 
 type generateOptions struct {
 	infraProvider            string

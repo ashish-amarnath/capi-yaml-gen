@@ -23,18 +23,32 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
 )
 
+// GetCoreMachineYamlParams is the parameters to generate core machine yaml
+type GetCoreMachineYamlParams struct {
+	Name                    string
+	Namespace               string
+	BsConfigName            string
+	BsConfigKind            string
+	BsProviderAPIVersion    string
+	K8sVersion              string
+	ClusterOwner            string
+	InfraMachineKind        string
+	InfraProviderAPIVersion string
+	IsControlPlane          bool
+}
+
 // GetCoreClusterYaml returns yaml for CAPI cluster objects
-func GetCoreClusterYaml(name, namespace, infraClusterKind string) (string, error) {
+func GetCoreClusterYaml(name, namespace, infraClusterKind, infraProviderAPIVersion string) (string, error) {
 	coreCluster := &clusterv1.Cluster{}
 	coreCluster.Kind = constants.CoreClusterKind
 	coreCluster.Name = name
 	coreCluster.Namespace = namespace
-	coreCluster.APIVersion = constants.CoreAPIVersion
+	coreCluster.APIVersion = clusterv1.GroupVersion.String()
 
 	coreCluster.Spec = clusterv1.ClusterSpec{
 		InfrastructureRef: &v1.ObjectReference{
 			Kind:       infraClusterKind,
-			APIVersion: constants.InfrastructureProviderAPIVersion,
+			APIVersion: infraProviderAPIVersion,
 			Name:       name,
 			Namespace:  namespace,
 		},
@@ -47,17 +61,16 @@ func GetCoreClusterYaml(name, namespace, infraClusterKind string) (string, error
 }
 
 // GetCoreMachineYaml returns yaml for CAPI machine object configured to be a controlplane or not
-func GetCoreMachineYaml(name, namespace, bsConfigName, bsConfigKind, version, clusterOwner,
-	infraMachineKind string, controlPlane bool) (string, error) {
+func GetCoreMachineYaml(p GetCoreMachineYamlParams) (string, error) {
 	coreMachine := &clusterv1.Machine{}
 	coreMachine.Kind = constants.CoreMachineKind
-	coreMachine.APIVersion = constants.CoreAPIVersion
-	coreMachine.Name = name
-	coreMachine.Namespace = namespace
+	coreMachine.APIVersion = clusterv1.GroupVersion.String()
+	coreMachine.Name = p.Name
+	coreMachine.Namespace = p.Namespace
 	lables := map[string]string{
-		clusterv1.MachineClusterLabelName: clusterOwner,
+		clusterv1.MachineClusterLabelName: p.ClusterOwner,
 	}
-	if controlPlane {
+	if p.IsControlPlane {
 		lables[clusterv1.MachineControlPlaneLabelName] = "true"
 	}
 	coreMachine.SetLabels(lables)
@@ -65,17 +78,17 @@ func GetCoreMachineYaml(name, namespace, bsConfigName, bsConfigKind, version, cl
 	coreMachine.Spec = clusterv1.MachineSpec{
 		Bootstrap: clusterv1.Bootstrap{
 			ConfigRef: &v1.ObjectReference{
-				Kind:       bsConfigKind,
-				APIVersion: constants.BootstrapProviderAPIVersion,
-				Name:       bsConfigName,
-				Namespace:  namespace,
+				Kind:       p.BsConfigKind,
+				APIVersion: p.BsProviderAPIVersion,
+				Name:       p.BsConfigName,
+				Namespace:  p.Namespace,
 			},
 		},
 		InfrastructureRef: v1.ObjectReference{
-			Kind:       infraMachineKind,
-			APIVersion: constants.InfrastructureProviderAPIVersion,
-			Namespace:  namespace,
-			Name:       name,
+			Kind:       p.InfraMachineKind,
+			APIVersion: p.InfraProviderAPIVersion,
+			Namespace:  p.Namespace,
+			Name:       p.Name,
 		},
 	}
 
