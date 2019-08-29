@@ -17,8 +17,8 @@ limitations under the License.
 package capa
 
 import (
-	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
 )
 

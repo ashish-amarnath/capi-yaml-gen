@@ -17,8 +17,8 @@ limitations under the License.
 package capi
 
 import (
-	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 	v1 "k8s.io/api/core/v1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
 )

@@ -1,4 +1,4 @@
-module github.com/ashish-amarnath/capiyaml
+module github.com/ashish-amarnath/capi-yaml-gen
 
 go 1.12
 

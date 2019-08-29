@@ -21,11 +21,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ashish-amarnath/capiyaml/cmd/cabpk"
-	"github.com/ashish-amarnath/capiyaml/cmd/capa"
-	"github.com/ashish-amarnath/capiyaml/cmd/capd"
-	"github.com/ashish-amarnath/capiyaml/cmd/capi"
-	"github.com/ashish-amarnath/capiyaml/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/cabpk"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capa"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capd"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capi"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 )
 
 func getInfraClusterYaml(infraProvider, cName, cNamespace string) (string, string, error) {

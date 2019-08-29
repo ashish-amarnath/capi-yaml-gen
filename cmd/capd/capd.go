@@ -17,8 +17,8 @@ limitations under the License.
 package capd
 
 import (
-	"github.com/ashish-amarnath/capiyaml/cmd/constants"
-	"github.com/ashish-amarnath/capiyaml/cmd/serialize"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 	dockerv1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
 )
 
