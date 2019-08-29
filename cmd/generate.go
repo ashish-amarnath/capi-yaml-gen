@@ -120,7 +120,7 @@ func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 
 	coreClusterYaml, err := capi.GetCoreClusterYaml(opts.clusterName, opts.clusterNamespace, infraClusterKind, infraProviderAPIVersion)
 	if err != nil {
-		return fmt.Errorf("failed to generate yaml for core cluster, %v\n", err)
+		return fmt.Errorf("failed to generate yaml for core cluster, %v", err)
 	}
 
 	pcmControlplane := printMachineParams{
