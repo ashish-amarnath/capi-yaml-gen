@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -69,7 +70,7 @@ func getInfraMachineYaml(infraProvider, mName, mNamespace string) (string, strin
 	return infraCPMachineYaml, infraCPMachineKind, err
 }
 
-func printMachineYaml(p printMachineParams) {
+func printMachineYaml(p printMachineParams, stdout, stderr io.Writer) {
 	for i := 0; i < p.count; i++ {
 		machineName := fmt.Sprintf("%s-%d", p.namePrefix, i)
 
@@ -79,7 +80,7 @@ func printMachineYaml(p printMachineParams) {
 		infraMachineYaml, infraMachineKind, err := getInfraMachineYaml(p.infraProvider,
 			machineName, p.clusterNamespace)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to generate yaml for infrastructure machine, %v\n", err)
+			fmt.Fprintf(stderr, "Failed to generate yaml for infrastructure machine, %v\n", err)
 			os.Exit(1)
 		}
 
@@ -87,29 +88,27 @@ func printMachineYaml(p printMachineParams) {
 			machineName, p.clusterNamespace, bsConfigName, bsConfigKind, p.k8sVersion,
 			p.clusterName, infraMachineKind, p.isControlPlane)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to generate yaml for core machine, %v\n", err)
+			fmt.Fprintf(stderr, "Failed to generate yaml for core machine, %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stdout, strings.TrimSpace(infraMachineYaml))
-		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-		fmt.Fprintf(os.Stdout, strings.TrimSpace(coreMachineYaml))
-		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-		fmt.Fprintf(os.Stdout, strings.TrimSpace(bsConfigYAML))
-		fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
+		fmt.Fprintf(stdout, strings.TrimSpace(infraMachineYaml))
+		fmt.Fprintf(stdout, constants.YAMLSeperator)
+		fmt.Fprintf(stdout, strings.TrimSpace(coreMachineYaml))
+		fmt.Fprintf(stdout, constants.YAMLSeperator)
+		fmt.Fprintf(stdout, strings.TrimSpace(bsConfigYAML))
+		fmt.Fprintf(stdout, constants.YAMLSeperator)
 	}
 }
 
-func runGenerateCommand(opts generateOptions) {
+func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 	infraClusterYaml, infraClusterKind, err := getInfraClusterYaml(opts.infraProvider, opts.clusterName, opts.clusterNamespace)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to generate yaml for infrastructure cluster, %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to generate yaml for infrastructure cluster, %v", err)
 	}
 
 	coreClusterYaml, err := capi.GetCoreClusterYaml(opts.clusterName, opts.clusterNamespace, infraClusterKind)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to generate yaml for core cluster, %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to generate yaml for core cluster, %v\n", err)
 	}
 
 	pcmControlplane := printMachineParams{
@@ -134,11 +133,12 @@ func runGenerateCommand(opts generateOptions) {
 		isControlPlane:    false,
 	}
 
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(infraClusterYaml))
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	fmt.Fprintf(os.Stdout, "%s", strings.TrimSpace(coreClusterYaml))
-	fmt.Fprintf(os.Stdout, constants.YAMLSeperator)
-	printMachineYaml(pcmControlplane)
-	printMachineYaml(pmcWorker)
+	fmt.Fprintf(stdout, constants.YAMLSeperator)
+	fmt.Fprintf(stdout, "%s", strings.TrimSpace(infraClusterYaml))
+	fmt.Fprintf(stdout, constants.YAMLSeperator)
+	fmt.Fprintf(stdout, "%s", strings.TrimSpace(coreClusterYaml))
+	fmt.Fprintf(stdout, constants.YAMLSeperator)
+	printMachineYaml(pcmControlplane, stdout, stderr)
+	printMachineYaml(pmcWorker, stdout, stderr)
+	return nil
 }

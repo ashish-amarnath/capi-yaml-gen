@@ -71,8 +71,8 @@ func getGenerateCommand() *cobra.Command {
 		Use:   "generate",
 		Short: "generate yaml for CAPI and its providers",
 		Long:  "generate yaml for CAPI and its providers",
-		Run: func(cmd *cobra.Command, args []string) {
-			runGenerateCommand(opts)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGenerateCommand(opts, os.Stdout, os.Stderr)
 		},
 	}
 
