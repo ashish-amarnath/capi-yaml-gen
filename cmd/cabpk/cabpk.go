@@ -18,17 +18,18 @@ package cabpk
 
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
-	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
-	infrav1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
+
+	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
 )
 
 // GetBootstrapProviderConfig generates kubeadm bootstrap provider config
-func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) (string, string, string, error) {
-	bsConfig := &infrav1.KubeadmConfig{}
+func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) *bootstrapv1.KubeadmConfig {
+	bsConfig := &bootstrapv1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
-	bsConfig.APIVersion = infrav1.GroupVersion.String()
+	bsConfig.Kind = constants.KubeadmConfigKind
+	bsConfig.APIVersion = bootstrapv1.GroupVersion.String()
 
 	switch {
 	case isControlPlane && itemNumber == 0:
@@ -37,7 +38,7 @@ func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, ite
 	case isControlPlane && itemNumber > 0:
 		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{
 			ControlPlane: &v1beta1.JoinControlPlane{
-				v1beta1.APIEndpoint{
+				LocalAPIEndpoint: v1beta1.APIEndpoint{
 					BindPort: 6443,
 				},
 			},
@@ -46,10 +47,5 @@ func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, ite
 		bsConfig.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{}
 	}
 
-	yamlBytes, err := serialize.MarshalToYAML(bsConfig)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	return string(yamlBytes), constants.KubeadmConfigKind, bsConfig.APIVersion, nil
+	return bsConfig
 }

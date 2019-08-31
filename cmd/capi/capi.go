@@ -17,84 +17,55 @@ limitations under the License.
 package capi
 
 import (
-	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
-	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
 )
 
-// GetCoreMachineYamlParams is the parameters to generate core machine yaml
-type GetCoreMachineYamlParams struct {
-	Name                    string
-	Namespace               string
-	BsConfigName            string
-	BsConfigKind            string
-	BsProviderAPIVersion    string
-	K8sVersion              string
-	ClusterOwner            string
-	InfraMachineKind        string
-	InfraProviderAPIVersion string
-	IsControlPlane          bool
+type object interface {
+	GetObjectKind() schema.ObjectKind
+	GetName() string
+	GetNamespace() string
 }
 
-// GetCoreClusterYaml returns yaml for CAPI cluster objects
-func GetCoreClusterYaml(name, namespace, infraClusterKind, infraProviderAPIVersion string) (string, error) {
+func referenceToObjectRef(r object) *v1.ObjectReference {
+	return &v1.ObjectReference{
+		Kind:       r.GetObjectKind().GroupVersionKind().GroupKind().Kind,
+		APIVersion: r.GetObjectKind().GroupVersionKind().GroupVersion().String(),
+		Name:       r.GetName(),
+		Namespace:  r.GetNamespace(),
+	}
+}
+
+// GetCoreCluster returns a CAPI cluster object
+func GetCoreCluster(name, namespace string, infraCluster object) *clusterv1.Cluster {
 	coreCluster := &clusterv1.Cluster{}
-	coreCluster.Kind = constants.CoreClusterKind
 	coreCluster.Name = name
 	coreCluster.Namespace = namespace
 	coreCluster.APIVersion = clusterv1.GroupVersion.String()
-
-	coreCluster.Spec = clusterv1.ClusterSpec{
-		InfrastructureRef: &v1.ObjectReference{
-			Kind:       infraClusterKind,
-			APIVersion: infraProviderAPIVersion,
-			Name:       name,
-			Namespace:  namespace,
-		},
-	}
-	yamlBytes, err := serialize.MarshalToYAML(coreCluster)
-	if err != nil {
-		return "", err
-	}
-	return string(yamlBytes), nil
+	coreCluster.Spec.InfrastructureRef = referenceToObjectRef(infraCluster)
+	return coreCluster
 }
 
-// GetCoreMachineYaml returns yaml for CAPI machine object configured to be a controlplane or not
-func GetCoreMachineYaml(p GetCoreMachineYamlParams) (string, error) {
+// GetCoreMachine returns a CAPI machine worker object
+func GetCoreMachine(name, namespace, clusterName string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
 	coreMachine := &clusterv1.Machine{}
-	coreMachine.Kind = constants.CoreMachineKind
 	coreMachine.APIVersion = clusterv1.GroupVersion.String()
-	coreMachine.Name = p.Name
-	coreMachine.Namespace = p.Namespace
-	lables := map[string]string{
-		clusterv1.MachineClusterLabelName: p.ClusterOwner,
+	coreMachine.Name = name
+	coreMachine.Namespace = namespace
+	labels := map[string]string{
+		clusterv1.MachineClusterLabelName: clusterName,
 	}
-	if p.IsControlPlane {
-		lables[clusterv1.MachineControlPlaneLabelName] = "true"
-	}
-	coreMachine.SetLabels(lables)
+	coreMachine.SetLabels(labels)
+	coreMachine.Spec.Bootstrap.ConfigRef = referenceToObjectRef(bootstrapConfig)
+	coreMachine.Spec.InfrastructureRef = *referenceToObjectRef(infraMachine)
+	return coreMachine
+}
 
-	coreMachine.Spec = clusterv1.MachineSpec{
-		Bootstrap: clusterv1.Bootstrap{
-			ConfigRef: &v1.ObjectReference{
-				Kind:       p.BsConfigKind,
-				APIVersion: p.BsProviderAPIVersion,
-				Name:       p.BsConfigName,
-				Namespace:  p.Namespace,
-			},
-		},
-		InfrastructureRef: v1.ObjectReference{
-			Kind:       p.InfraMachineKind,
-			APIVersion: p.InfraProviderAPIVersion,
-			Namespace:  p.Namespace,
-			Name:       p.Name,
-		},
-	}
-
-	yamlBytes, err := serialize.MarshalToYAML(coreMachine)
-	if err != nil {
-		return "", err
-	}
-	return string(yamlBytes), nil
+// GetCoreControlPlaneMachine returns a cluster-api machine that identifies as a
+// control plane node
+func GetCoreControlPlaneMachine(name, namespace, clusterName string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
+	machine := GetCoreMachine(name, namespace, clusterName, bootstrapConfig, infraMachine)
+	machine.Labels[clusterv1.MachineControlPlaneLabelName] = "true"
+	return machine
 }

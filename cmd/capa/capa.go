@@ -18,39 +18,26 @@ package capa
 
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
-	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
+
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
 )
 
-// GetAWSClusterYaml generates yaml for an AWS cluster
-func GetAWSClusterYaml(name, namespace string) (string, string, string, error) {
+// GetAWSCluster generates an AWS cluster
+func GetAWSCluster(name, namespace string) *infrav1.AWSCluster {
 	awsCluster := &infrav1.AWSCluster{}
-
 	awsCluster.Kind = constants.AWSClusterKind
 	awsCluster.APIVersion = infrav1.GroupVersion.String()
 	awsCluster.Name = name
 	awsCluster.Namespace = namespace
-
-	yamlBytes, err := serialize.MarshalToYAML(awsCluster)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	return string(yamlBytes), awsCluster.Kind, awsCluster.APIVersion, nil
+	return awsCluster
 }
 
-// GetAWSMachineYaml generates yaml for a docker controlplane machine
-func GetAWSMachineYaml(name, namespace string) (string, string, string, error) {
+// GetAWSMachine generates an AWS machine
+func GetAWSMachine(name, namespace string) *infrav1.AWSMachine {
 	awsMachine := &infrav1.AWSMachine{}
 	awsMachine.Kind = constants.AWSMachineKind
 	awsMachine.APIVersion = infrav1.GroupVersion.String()
 	awsMachine.Name = name
 	awsMachine.Namespace = namespace
-
-	yamlBytes, err := serialize.MarshalToYAML(awsMachine)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	return string(yamlBytes), awsMachine.Kind, awsMachine.APIVersion, nil
+	return awsMachine
 }

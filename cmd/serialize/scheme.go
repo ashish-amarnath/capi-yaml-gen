@@ -43,5 +43,5 @@ func MarshalToYAML(obj runtime.Object) ([]byte, error) {
 	if err := codec.Encode(obj, &buf); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return buf.Bytes(), nil
+	return bytes.TrimSpace(buf.Bytes()), nil
 }
