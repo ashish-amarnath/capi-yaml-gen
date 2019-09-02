@@ -27,5 +27,5 @@ const (
 
 	KubeadmConfigKind = "KubeadmConfig"
 
-	YAMLSeperator = "\n---\n"
+	YAMLSeperator = "---"
 )

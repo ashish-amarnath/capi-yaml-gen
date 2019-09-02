@@ -19,7 +19,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/cabpk"
@@ -27,6 +26,9 @@ import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capd"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capi"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
+
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type printMachineParams struct {
@@ -40,88 +42,77 @@ type printMachineParams struct {
 	isControlPlane    bool
 }
 
-func getInfraClusterYaml(infraProvider, cName, cNamespace string) (string, string, string, error) {
-	switch strings.ToLower(infraProvider) {
+type object interface {
+	runtime.Object
+	GetName() string
+	GetNamespace() string
+}
+
+func getInfraCluster(provider, name, namespace string) (object, error) {
+	switch strings.ToLower(provider) {
 	case "docker":
-		return capd.GetDockerClusterYaml(cName, cNamespace)
+		return capd.GetDockerCluster(name, namespace), nil
 	case "aws":
-		return capa.GetAWSClusterYaml(cName, cNamespace)
+		return capa.GetAWSCluster(name, namespace), nil
 	default:
-		return "", "", "", fmt.Errorf("Unsupported cluster infrastructure provider %q", infraProvider)
+		return nil, fmt.Errorf("Unsupported cluster infrastructure provider %q", provider)
 	}
 }
 
-func getBoostrapProviderConfigYaml(bsProvider, bsConfigName, cNamespace, k8sVersion string, isControlPlane bool, itemNumber int) (string, string, string, error) {
-	switch strings.ToLower((bsProvider)) {
+func getBoostrapProviderConfig(provider, name, namespace string, isControlPlane bool, itemNumber int) (object, error) {
+	switch strings.ToLower(provider) {
 	case "kubeadm":
-		// TODO: use k8sversion but have to figure out if we need ClusterConfig/InitConfig or JoinConfig
-		return cabpk.GetBootstrapProviderConfig(bsConfigName, cNamespace, isControlPlane, itemNumber)
+		return cabpk.GetBootstrapProviderConfig(name, namespace, isControlPlane, itemNumber), nil
 	default:
-		return "", "", "", fmt.Errorf("Unsupported bootstrap provider %q", bsProvider)
+		return nil, fmt.Errorf("Unsupported bootstrap provider %q", provider)
 	}
 }
 
-func getInfraMachineYaml(infraProvider, mName, mNamespace string) (string, string, string, error) {
+func getInfraMachine(infraProvider, mName, mNamespace string) (object, error) {
 	switch strings.ToLower(infraProvider) {
 	case "docker":
-		return capd.GetDockerMachineYaml(mName, mNamespace)
+		return capd.GetDockerMachine(mName, mNamespace), nil
 	case "aws":
-		return capa.GetAWSMachineYaml(mName, mNamespace)
+		return capa.GetAWSMachine(mName, mNamespace), nil
 	default:
-		return "", "", "", fmt.Errorf("Unsupported machine infrastructure provider %q", infraProvider)
+		return nil, fmt.Errorf("Unsupported machine infrastructure provider %q", infraProvider)
 	}
 }
 
-func printMachineYaml(p printMachineParams, stdout, stderr io.Writer) {
+func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
+	out := make([]runtime.Object, 0)
 	for i := 0; i < p.count; i++ {
 		machineName := fmt.Sprintf("%s-%d", p.namePrefix, i)
 
 		bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(machineName))
-		bsConfigYAML, bsConfigKind, bsProviderAPIVersion, err := getBoostrapProviderConfigYaml(p.bootstrapProvider, bsConfigName, p.clusterNamespace, p.k8sVersion, p.isControlPlane, i)
-
-		infraMachineYaml, infraMachineKind, infraProviderVersion, err := getInfraMachineYaml(p.infraProvider,
-			machineName, p.clusterNamespace)
+		bsConfig, err := getBoostrapProviderConfig(p.bootstrapProvider, bsConfigName, p.clusterNamespace, p.isControlPlane, i)
 		if err != nil {
-			fmt.Fprintf(stderr, "Failed to generate yaml for infrastructure machine, %v\n", err)
-			os.Exit(1)
+			return nil, err
 		}
-
-		coreMachineParams := capi.GetCoreMachineYamlParams{
-			Name:                    machineName,
-			Namespace:               p.clusterNamespace,
-			BsConfigName:            bsConfigName,
-			BsConfigKind:            bsConfigKind,
-			BsProviderAPIVersion:    bsProviderAPIVersion,
-			K8sVersion:              p.k8sVersion,
-			ClusterOwner:            p.clusterName,
-			InfraMachineKind:        infraMachineKind,
-			InfraProviderAPIVersion: infraProviderVersion,
-			IsControlPlane:          p.isControlPlane,
-		}
-		coreMachineYaml, err := capi.GetCoreMachineYaml(coreMachineParams)
+		infraMachine, err := getInfraMachine(p.infraProvider, machineName, p.clusterNamespace)
 		if err != nil {
-			fmt.Fprintf(stderr, "Failed to generate yaml for core machine, %v\n", err)
-			os.Exit(1)
+			return nil, err
 		}
-		fmt.Fprintf(stdout, strings.TrimSpace(infraMachineYaml))
-		fmt.Fprintf(stdout, constants.YAMLSeperator)
-		fmt.Fprintf(stdout, strings.TrimSpace(coreMachineYaml))
-		fmt.Fprintf(stdout, constants.YAMLSeperator)
-		fmt.Fprintf(stdout, strings.TrimSpace(bsConfigYAML))
-		fmt.Fprintf(stdout, constants.YAMLSeperator)
+		out = append(out, infraMachine)
+		// TODO get rid of if/else
+		if p.isControlPlane {
+			out = append(out, capi.GetCoreControlPlaneMachine(machineName, p.clusterNamespace, p.clusterName, bsConfig, infraMachine))
+		} else {
+			out = append(out, capi.GetCoreMachine(machineName, p.clusterNamespace, p.clusterName, bsConfig, infraMachine))
+		}
+		out = append(out, bsConfig)
 	}
+	return out, nil
 }
 
 func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
-	infraClusterYaml, infraClusterKind, infraProviderAPIVersion, err := getInfraClusterYaml(opts.infraProvider, opts.clusterName, opts.clusterNamespace)
+	items := make([]runtime.Object, 0)
+	infraCluster, err := getInfraCluster(opts.infraProvider, opts.clusterName, opts.clusterNamespace)
 	if err != nil {
-		return fmt.Errorf("failed to generate yaml for infrastructure cluster, %v", err)
+		return err
 	}
 
-	coreClusterYaml, err := capi.GetCoreClusterYaml(opts.clusterName, opts.clusterNamespace, infraClusterKind, infraProviderAPIVersion)
-	if err != nil {
-		return fmt.Errorf("failed to generate yaml for core cluster, %v", err)
-	}
+	coreCluster := capi.GetCoreCluster(opts.clusterName, opts.clusterNamespace, infraCluster)
 
 	pcmControlplane := printMachineParams{
 		count:             opts.controlplaneMachineCount,
@@ -145,12 +136,18 @@ func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 		isControlPlane:    false,
 	}
 
-	fmt.Fprintf(stdout, constants.YAMLSeperator)
-	fmt.Fprintf(stdout, "%s", strings.TrimSpace(infraClusterYaml))
-	fmt.Fprintf(stdout, constants.YAMLSeperator)
-	fmt.Fprintf(stdout, "%s", strings.TrimSpace(coreClusterYaml))
-	fmt.Fprintf(stdout, constants.YAMLSeperator)
-	printMachineYaml(pcmControlplane, stdout, stderr)
-	printMachineYaml(pmcWorker, stdout, stderr)
+	controlPlanes, err := configuredMachines(pcmControlplane)
+	workers, err := configuredMachines(pmcWorker)
+	items = append(items, infraCluster, coreCluster)
+	items = append(items, controlPlanes...)
+	items = append(items, workers...)
+	for _, item := range items {
+		fmt.Fprintln(stdout, constants.YAMLSeperator)
+		b, err := serialize.MarshalToYAML(item)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(stdout, string(b))
+	}
 	return nil
 }
