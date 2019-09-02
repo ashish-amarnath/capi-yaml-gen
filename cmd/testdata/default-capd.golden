@@ -6,8 +6,6 @@ metadata:
   name: my-cluster
   namespace: default
 spec: {}
-status:
-  ready: false
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Cluster
@@ -21,9 +19,6 @@ spec:
     kind: DockerCluster
     name: my-cluster
     namespace: default
-status:
-  controlPlaneInitialized: false
-  infrastructureReady: false
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
@@ -32,8 +27,6 @@ metadata:
   name: controlplane-0
   namespace: default
 spec: {}
-status:
-  ready: false
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Machine
@@ -57,9 +50,6 @@ spec:
     name: controlplane-0
     namespace: default
   metadata: {}
-status:
-  bootstrapReady: false
-  infrastructureReady: false
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
 kind: KubeadmConfig
@@ -88,7 +78,6 @@ spec:
       advertiseAddress: ""
       bindPort: 0
     nodeRegistration: {}
-status: {}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
@@ -97,8 +86,6 @@ metadata:
   name: worker-0
   namespace: default
 spec: {}
-status:
-  ready: false
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Machine
@@ -121,9 +108,6 @@ spec:
     name: worker-0
     namespace: default
   metadata: {}
-status:
-  bootstrapReady: false
-  infrastructureReady: false
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
 kind: KubeadmConfig
@@ -135,4 +119,3 @@ spec:
   joinConfiguration:
     discovery: {}
     nodeRegistration: {}
-status: {}
