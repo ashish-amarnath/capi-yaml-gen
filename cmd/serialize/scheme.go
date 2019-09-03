@@ -3,6 +3,7 @@ package serialize
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,5 +44,15 @@ func MarshalToYAML(obj runtime.Object) ([]byte, error) {
 	if err := codec.Encode(obj, &buf); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return bytes.TrimSpace(buf.Bytes()), nil
+
+	var yaml []string
+	for _, l := range strings.Split(string(buf.Bytes()), "\n") {
+		// This logic relies on `status` being the last field of the yaml
+		if strings.HasPrefix(l, "status:") {
+			break
+		}
+		yaml = append(yaml, l)
+	}
+
+	return []byte(strings.Join(yaml, "\n")), nil
 }
