@@ -13,6 +13,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/sys v0.0.0-20190710143415-6ec70d6a5542 // indirect
+	golang.org/x/tools v0.0.0-20190312170243-e65039ee4138 // indirect
 	k8s.io/api v0.0.0-20190711103429-37c3b8b1ca65
 	k8s.io/apimachinery v0.0.0-20190711103026-7bf792636534
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible

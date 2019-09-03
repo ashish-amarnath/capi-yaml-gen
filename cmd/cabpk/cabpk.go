@@ -18,13 +18,17 @@ package cabpk
 
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 
 	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
 )
 
-// GetBootstrapProviderConfig generates kubeadm bootstrap provider config
-func GetBootstrapProviderConfig(name, namespace string, isControlPlane bool, itemNumber int) *bootstrapv1.KubeadmConfig {
+// Provider kubeadm implementation of BootstrapProvider
+type Provider struct{}
+
+// GetConfig generates kubeadm bootstrap provider config
+func (p Provider) GetConfig(name, namespace string, isControlPlane bool, itemNumber int) generator.Object {
 	bsConfig := &bootstrapv1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
