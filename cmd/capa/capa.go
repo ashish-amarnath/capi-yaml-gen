@@ -18,12 +18,16 @@ package capa
 
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
 )
 
-// GetAWSCluster generates an AWS cluster
-func GetAWSCluster(name, namespace string) *infrav1.AWSCluster {
+// Provider CAPA implementation of InfrastructureProvider
+type Provider struct{}
+
+// GetInfraCluster generates an AWS cluster
+func (p Provider) GetInfraCluster(name, namespace string) generator.Object {
 	awsCluster := &infrav1.AWSCluster{}
 	awsCluster.Kind = constants.AWSClusterKind
 	awsCluster.APIVersion = infrav1.GroupVersion.String()
@@ -32,8 +36,8 @@ func GetAWSCluster(name, namespace string) *infrav1.AWSCluster {
 	return awsCluster
 }
 
-// GetAWSMachine generates an AWS machine
-func GetAWSMachine(name, namespace string) *infrav1.AWSMachine {
+// GetInfraMachine generates an AWS machine
+func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	awsMachine := &infrav1.AWSMachine{}
 	awsMachine.Kind = constants.AWSMachineKind
 	awsMachine.APIVersion = infrav1.GroupVersion.String()

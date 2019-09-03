@@ -26,6 +26,7 @@ import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capd"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/capi"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
+	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,8 +34,8 @@ import (
 
 type printMachineParams struct {
 	count             int
-	infraProvider     string
-	bootstrapProvider string
+	infraProvider     generator.InfrastructureProvider
+	bootstrapProvider generator.BootstrapProvider
 	namePrefix        string
 	clusterName       string
 	clusterNamespace  string
@@ -42,40 +43,23 @@ type printMachineParams struct {
 	isControlPlane    bool
 }
 
-type object interface {
-	runtime.Object
-	GetName() string
-	GetNamespace() string
-}
-
-func getInfraCluster(provider, name, namespace string) (object, error) {
+func getInfraProvider(provider string) (generator.InfrastructureProvider, error) {
 	switch strings.ToLower(provider) {
 	case "docker":
-		return capd.GetDockerCluster(name, namespace), nil
+		return capd.Provider{}, nil
 	case "aws":
-		return capa.GetAWSCluster(name, namespace), nil
+		return capa.Provider{}, nil
 	default:
-		return nil, fmt.Errorf("Unsupported cluster infrastructure provider %q", provider)
+		return nil, fmt.Errorf("Unsupported infrastructure provider %q", provider)
 	}
 }
 
-func getBoostrapProviderConfig(provider, name, namespace string, isControlPlane bool, itemNumber int) (object, error) {
+func getBootstrapProvider(provider string) (generator.BootstrapProvider, error) {
 	switch strings.ToLower(provider) {
 	case "kubeadm":
-		return cabpk.GetBootstrapProviderConfig(name, namespace, isControlPlane, itemNumber), nil
+		return cabpk.Provider{}, nil
 	default:
 		return nil, fmt.Errorf("Unsupported bootstrap provider %q", provider)
-	}
-}
-
-func getInfraMachine(infraProvider, mName, mNamespace string) (object, error) {
-	switch strings.ToLower(infraProvider) {
-	case "docker":
-		return capd.GetDockerMachine(mName, mNamespace), nil
-	case "aws":
-		return capa.GetAWSMachine(mName, mNamespace), nil
-	default:
-		return nil, fmt.Errorf("Unsupported machine infrastructure provider %q", infraProvider)
 	}
 }
 
@@ -85,14 +69,9 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 		machineName := fmt.Sprintf("%s-%d", p.namePrefix, i)
 
 		bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(machineName))
-		bsConfig, err := getBoostrapProviderConfig(p.bootstrapProvider, bsConfigName, p.clusterNamespace, p.isControlPlane, i)
-		if err != nil {
-			return nil, err
-		}
-		infraMachine, err := getInfraMachine(p.infraProvider, machineName, p.clusterNamespace)
-		if err != nil {
-			return nil, err
-		}
+		bsConfig := p.bootstrapProvider.GetConfig(bsConfigName, p.clusterNamespace, p.isControlPlane, i)
+		infraMachine := p.infraProvider.GetInfraMachine(machineName, p.clusterNamespace)
+
 		out = append(out, infraMachine)
 		// TODO get rid of if/else
 		if p.isControlPlane {
@@ -107,17 +86,23 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 
 func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 	items := make([]runtime.Object, 0)
-	infraCluster, err := getInfraCluster(opts.infraProvider, opts.clusterName, opts.clusterNamespace)
+	ip, err := getInfraProvider(opts.infraProvider)
 	if err != nil {
 		return err
 	}
+	bp, err := getBootstrapProvider(opts.bsProvider)
+	if err != nil {
+		return err
+	}
+
+	infraCluster := ip.GetInfraCluster(opts.clusterName, opts.clusterNamespace)
 
 	coreCluster := capi.GetCoreCluster(opts.clusterName, opts.clusterNamespace, infraCluster)
 
 	pcmControlplane := printMachineParams{
 		count:             opts.controlplaneMachineCount,
-		infraProvider:     opts.infraProvider,
-		bootstrapProvider: opts.bsProvider,
+		infraProvider:     ip,
+		bootstrapProvider: bp,
 		namePrefix:        "controlplane",
 		clusterName:       opts.clusterName,
 		clusterNamespace:  opts.clusterNamespace,
@@ -127,8 +112,8 @@ func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 
 	pmcWorker := printMachineParams{
 		count:             opts.workerMachineCount,
-		infraProvider:     opts.infraProvider,
-		bootstrapProvider: opts.bsProvider,
+		infraProvider:     ip,
+		bootstrapProvider: bp,
 		namePrefix:        "worker",
 		clusterName:       opts.clusterName,
 		clusterNamespace:  opts.clusterNamespace,
