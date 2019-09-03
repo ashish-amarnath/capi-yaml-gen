@@ -47,7 +47,8 @@ func MarshalToYAML(obj runtime.Object) ([]byte, error) {
 
 	var yaml []string
 	for _, l := range strings.Split(string(buf.Bytes()), "\n") {
-		if strings.Compare(l, "status:") == 0 || strings.Compare(l, "status: {}") == 0 {
+		// This logic relies on `status` being the last field of the yaml
+		if strings.HasPrefix(l, "status:") {
 			break
 		}
 		yaml = append(yaml, l)
