@@ -19,6 +19,34 @@ func TestGoldenFiles(t *testing.T) {
 		options    generateOptions
 	}{
 		{
+			"./capi-yaml-gen generate --generate-machine-deployment=false",
+			"default-capd-no-machine-deployment",
+			generateOptions{
+				infraProvider:            defaultInfrastructureProvider,
+				clusterName:              defaultClusterName,
+				clusterNamespace:         defaultNamespace,
+				bsProvider:               defaultBootstrapProvider,
+				k8sVersion:               defaultVersion,
+				controlplaneMachineCount: defaultControlPlaneCount,
+				workerMachineCount:       defaultWorkerCount,
+				machineDeployment:        false,
+			},
+		},
+		{
+			"./capi-yaml-gen generate --infrastructure-provider aws",
+			"default-capa-no-machine-deployment",
+			generateOptions{
+				infraProvider:            "aws",
+				clusterName:              defaultClusterName,
+				clusterNamespace:         defaultNamespace,
+				bsProvider:               defaultBootstrapProvider,
+				k8sVersion:               defaultVersion,
+				controlplaneMachineCount: defaultControlPlaneCount,
+				workerMachineCount:       defaultWorkerCount,
+				machineDeployment:        false,
+			},
+		},
+		{
 			"./capi-yaml-gen generate",
 			"default-capd",
 			generateOptions{
@@ -29,31 +57,16 @@ func TestGoldenFiles(t *testing.T) {
 				k8sVersion:               defaultVersion,
 				controlplaneMachineCount: defaultControlPlaneCount,
 				workerMachineCount:       defaultWorkerCount,
-			},
-		},
-		{
-			"./capi-yaml-gen generate --infra-provider aws",
-			"default-capa",
-			generateOptions{
-				infraProvider:            "aws",
-				clusterName:              defaultClusterName,
-				clusterNamespace:         defaultNamespace,
-				bsProvider:               defaultBootstrapProvider,
-				k8sVersion:               defaultVersion,
-				controlplaneMachineCount: defaultControlPlaneCount,
-				workerMachineCount:       defaultWorkerCount,
+				machineDeployment:        true,
 			},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			var stdout, stderr bytes.Buffer
-			if err := runGenerateCommand(tc.options, &stdout, &stderr); err != nil {
+			var stdout bytes.Buffer
+			if err := runGenerateCommand(tc.options, &stdout); err != nil {
 				t.Fatal(err)
-			}
-			if stderr.Len() > 0 {
-				t.Fatal(stderr.String())
 			}
 
 			if *update {
