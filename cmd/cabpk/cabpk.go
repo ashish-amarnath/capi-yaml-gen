@@ -53,3 +53,15 @@ func (p Provider) GetConfig(name, namespace string, isControlPlane bool, itemNum
 
 	return bsConfig
 }
+
+// GetConfigTemplate only generates configs for Worker machines.
+// ControlPlanes cannot be managed by MachineDeployments.
+func (p Provider) GetConfigTemplate(name, namespace string) generator.Object {
+	template := &bootstrapv1.KubeadmConfigTemplate{}
+	template.Name = name
+	template.Namespace = namespace
+	template.Kind = constants.KubeadmConfigKind + "Template"
+	template.APIVersion = bootstrapv1.GroupVersion.String()
+	template.Spec.Template.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{}
+	return template
+}

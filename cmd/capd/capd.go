@@ -44,3 +44,13 @@ func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	dockerMachine.Namespace = namespace
 	return dockerMachine
 }
+
+// GetInfraMachineTemplate returns a docker machine template
+func (p Provider) GetInfraMachineTemplate(name, namespace string) generator.Object {
+	template := &infrav1.DockerMachineTemplate{}
+	template.Name = name
+	template.Namespace = namespace
+	template.Kind = constants.DockerMachineKind + "Template"
+	template.APIVersion = infrav1.GroupVersion.String()
+	return template
+}

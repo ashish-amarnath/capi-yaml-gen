@@ -28,6 +28,15 @@ $ go run main.go generate --controlplane-count 3
 - WorkerMachineCountt: 1
 
 ```(bash)
-$ go run main.go generate --controlplane-count 3 --infra-provider aws
+$ go run main.go generate --controlplane-count 3 --infrastructure-provider aws
 # yaml written to stdout
+```
+
+### MachineDeployments
+
+By default workers will be managed by a MachineDeployment. If you do not want this behavior set the
+`--generate-machined-deployment` flag to false like this:
+
+```bash
+go run main.go generate --generate-machine-deployment=false
 ```

@@ -16,7 +16,9 @@ limitations under the License.
 
 package generator
 
-import "k8s.io/apimachinery/pkg/runtime"
+import (
+	"k8s.io/apimachinery/pkg/runtime"
+)
 
 // Object is a generic type
 type Object interface {
@@ -29,9 +31,11 @@ type Object interface {
 type InfrastructureProvider interface {
 	GetInfraMachine(name, namespace string) Object
 	GetInfraCluster(name, namespace string) Object
+	GetInfraMachineTemplate(name, namespace string) Object
 }
 
 // BootstrapProvider interface for bootstrap providers
 type BootstrapProvider interface {
 	GetConfig(name, namespace string, isControlplane bool, count int) Object
+	GetConfigTemplate(name, namespace string) Object
 }
