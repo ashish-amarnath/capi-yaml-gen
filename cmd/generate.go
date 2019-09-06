@@ -84,7 +84,14 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 	return out, nil
 }
 
-func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
+func configuredMachineDeployment(params printMachineParams) []runtime.Object {
+	machineTemplate := params.infraProvider.GetInfraMachineTemplate(params.namePrefix, params.clusterNamespace)
+	configTemplate := params.bootstrapProvider.GetConfigTemplate(params.namePrefix, params.clusterNamespace)
+	md := capi.GetCoreMachineDeployment(params.clusterName, params.namePrefix, params.clusterNamespace, params.k8sVersion, int32(params.count), machineTemplate, configTemplate)
+	return []runtime.Object{machineTemplate, configTemplate, md}
+}
+
+func runGenerateCommand(opts generateOptions, stdout io.Writer) error {
 	items := make([]runtime.Object, 0)
 	ip, err := getInfraProvider(opts.infraProvider)
 	if err != nil {
@@ -122,7 +129,17 @@ func runGenerateCommand(opts generateOptions, stdout, stderr io.Writer) error {
 	}
 
 	controlPlanes, err := configuredMachines(pcmControlplane)
+	if err != nil {
+		return err
+	}
 	workers, err := configuredMachines(pmcWorker)
+	if err != nil {
+		return err
+	}
+	if opts.machineDeployment {
+		pmcWorker.namePrefix += "-md"
+		workers = configuredMachineDeployment(pmcWorker)
+	}
 	items = append(items, infraCluster, coreCluster)
 	items = append(items, controlPlanes...)
 	items = append(items, workers...)

@@ -69,3 +69,35 @@ func GetCoreControlPlaneMachine(name, namespace, clusterName string, bootstrapCo
 	machine.Labels[clusterv1.MachineControlPlaneLabelName] = "true"
 	return machine
 }
+
+// GetCoreMachineDeployment returns a cluster-api machine deployment object
+func GetCoreMachineDeployment(clusterName, name, namespace, version string, replicas int32, machineTemplate, bootstrapConfigTemplate object) *clusterv1.MachineDeployment {
+	dep := &clusterv1.MachineDeployment{}
+	dep.Name = name
+	dep.Namespace = namespace
+	dep.Spec.Replicas = &replicas
+
+	labels := map[string]string{
+		clusterv1.MachineClusterLabelName: clusterName,
+	}
+	dep.Spec.Selector.MatchLabels = labels
+	dep.Spec.Template.ObjectMeta.Labels = labels
+	dep.Spec.Template.Spec.Version = &version
+
+	// Set the machine template
+	dep.Spec.Template.Spec.InfrastructureRef.Name = machineTemplate.GetName()
+	dep.Spec.Template.Spec.InfrastructureRef.Namespace = machineTemplate.GetNamespace()
+	dep.Spec.Template.Spec.InfrastructureRef.Kind = machineTemplate.GetObjectKind().GroupVersionKind().Kind
+	dep.Spec.Template.Spec.InfrastructureRef.APIVersion = machineTemplate.GetObjectKind().GroupVersionKind().GroupVersion().String()
+
+	// Set the bootstrap config template
+	configTemplate := v1.ObjectReference{
+		Kind:       bootstrapConfigTemplate.GetObjectKind().GroupVersionKind().Kind,
+		Namespace:  bootstrapConfigTemplate.GetNamespace(),
+		Name:       bootstrapConfigTemplate.GetName(),
+		APIVersion: bootstrapConfigTemplate.GetObjectKind().GroupVersionKind().GroupVersion().String(),
+	}
+	dep.Spec.Template.Spec.Bootstrap.ConfigRef = &configTemplate
+
+	return dep
+}

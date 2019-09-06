@@ -80,56 +80,42 @@ spec:
     nodeRegistration: {}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-kind: DockerMachineTemplate
+kind: DockerMachine
 metadata:
   creationTimestamp: null
-  name: worker-md
+  name: worker-0
   namespace: default
-spec:
-  template:
-    spec: {}
-
----
-apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
-kind: KubeadmConfigTemplate
-metadata:
-  creationTimestamp: null
-  name: worker-md
-  namespace: default
-spec:
-  template:
-    spec:
-      joinConfiguration:
-        discovery: {}
-        nodeRegistration: {}
-
+spec: {}
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
-kind: MachineDeployment
+kind: Machine
 metadata:
   creationTimestamp: null
-  name: worker-md
+  labels:
+    cluster.x-k8s.io/cluster-name: my-cluster
+  name: worker-0
   namespace: default
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      cluster.x-k8s.io/cluster-name: my-cluster
-  template:
-    metadata:
-      labels:
-        cluster.x-k8s.io/cluster-name: my-cluster
-    spec:
-      bootstrap:
-        configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
-          kind: KubeadmConfigTemplate
-          name: worker-md
-          namespace: default
-      infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-        kind: DockerMachineTemplate
-        name: worker-md
-        namespace: default
-      metadata: {}
-      version: v1.15.3
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+      kind: KubeadmConfig
+      name: worker-0-config
+      namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: DockerMachine
+    name: worker-0
+    namespace: default
+  metadata: {}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  creationTimestamp: null
+  name: worker-0-config
+  namespace: default
+spec:
+  joinConfiguration:
+    discovery: {}
+    nodeRegistration: {}

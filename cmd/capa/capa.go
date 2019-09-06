@@ -19,7 +19,6 @@ package capa
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
-
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
 )
 
@@ -44,4 +43,14 @@ func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	awsMachine.Name = name
 	awsMachine.Namespace = namespace
 	return awsMachine
+}
+
+// GetInfraMachineTemplate generates an AWS machine template
+func (p Provider) GetInfraMachineTemplate(name, namespace string) generator.Object {
+	template := &infrav1.AWSMachineTemplate{}
+	template.Name = name
+	template.Namespace = namespace
+	template.Kind = constants.AWSMachineKind + "Template"
+	template.APIVersion = infrav1.GroupVersion.String()
+	return template
 }

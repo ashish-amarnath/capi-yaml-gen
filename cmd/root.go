@@ -30,7 +30,7 @@ const (
 	defaultNamespace              = "default"
 	defaultInfrastructureProvider = "docker"
 	defaultBootstrapProvider      = "kubeadm"
-	defaultVersion                = "v1.14.2"
+	defaultVersion                = "v1.15.3"
 	defaultControlPlaneCount      = 1
 	defaultWorkerCount            = 1
 )
@@ -41,6 +41,7 @@ type generateOptions struct {
 	clusterNamespace         string
 	bsProvider               string
 	k8sVersion               string
+	machineDeployment        bool
 	controlplaneMachineCount int
 	workerMachineCount       int
 }
@@ -71,17 +72,18 @@ func getGenerateCommand() *cobra.Command {
 		Short: "generate yaml for CAPI and its providers",
 		Long:  "generate yaml for CAPI and its providers",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGenerateCommand(opts, os.Stdout, os.Stderr)
+			return runGenerateCommand(opts, os.Stdout)
 		},
 	}
 
 	cmd.Flags().StringVarP(&opts.clusterName, "cluster-name", "c", defaultClusterName, "Name for the cluster")
 	cmd.Flags().StringVarP(&opts.clusterNamespace, "namespace", "n", defaultNamespace, "Namespace where the cluster will be created")
-	cmd.Flags().StringVarP(&opts.infraProvider, "infra-provider", "i", defaultInfrastructureProvider, "Infrastructure provider for the cluster")
+	cmd.Flags().StringVarP(&opts.infraProvider, "infrastructure-provider", "i", defaultInfrastructureProvider, "Infrastructure provider for the cluster")
 	cmd.Flags().StringVarP(&opts.bsProvider, "boostrap-provider", "b", defaultBootstrapProvider, "Bootstrap provider for the cluster")
 	cmd.Flags().StringVarP(&opts.k8sVersion, "k8s-version", "k", defaultVersion, "Version of kubernetes for the cluster")
+	cmd.Flags().BoolVarP(&opts.machineDeployment, "generate-machine-deployment", "d", true, "Generate a machine deployment instead of individual machines")
 
-	cmd.Flags().IntVarP(&opts.controlplaneMachineCount, "controlplane-count", "m", defaultControlPlaneCount, "Number of controlplane machines in the cluster")
+	cmd.Flags().IntVarP(&opts.controlplaneMachineCount, "control-plane-count", "m", defaultControlPlaneCount, "Number of control plane machines in the cluster")
 	cmd.Flags().IntVarP(&opts.workerMachineCount, "worker-count", "w", defaultWorkerCount, "Number of worker machines in the cluster")
 
 	return cmd
