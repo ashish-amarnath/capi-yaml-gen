@@ -18,6 +18,7 @@ package generator
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
+	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 )
 
 // Object is a generic type
@@ -32,10 +33,12 @@ type InfrastructureProvider interface {
 	GetInfraMachine(name, namespace string) Object
 	GetInfraCluster(name, namespace string) Object
 	GetInfraMachineTemplate(name, namespace string) Object
+	SetBootstrapConfigInfraValues(*bootstrapv1.KubeadmConfig)
+	SetBootstrapConfigTemplateInfraValues(*bootstrapv1.KubeadmConfigTemplate)
 }
 
 // BootstrapProvider interface for bootstrap providers
 type BootstrapProvider interface {
-	GetConfig(name, namespace string, isControlplane bool, count int) Object
-	GetConfigTemplate(name, namespace string) Object
+	GetConfig(name, namespace string, isControlplane bool, count int) *bootstrapv1.KubeadmConfig
+	GetConfigTemplate(name, namespace string) *bootstrapv1.KubeadmConfigTemplate
 }

@@ -18,7 +18,6 @@ package cabpk
 
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
-	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 
 	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
@@ -28,7 +27,7 @@ import (
 type Provider struct{}
 
 // GetConfig generates kubeadm bootstrap provider config
-func (p Provider) GetConfig(name, namespace string, isControlPlane bool, itemNumber int) generator.Object {
+func (p Provider) GetConfig(name, namespace string, isControlPlane bool, itemNumber int) *bootstrapv1.KubeadmConfig {
 	bsConfig := &bootstrapv1.KubeadmConfig{}
 	bsConfig.Name = name
 	bsConfig.Namespace = namespace
@@ -56,12 +55,13 @@ func (p Provider) GetConfig(name, namespace string, isControlPlane bool, itemNum
 
 // GetConfigTemplate only generates configs for Worker machines.
 // ControlPlanes cannot be managed by MachineDeployments.
-func (p Provider) GetConfigTemplate(name, namespace string) generator.Object {
+func (p Provider) GetConfigTemplate(name, namespace string) *bootstrapv1.KubeadmConfigTemplate {
 	template := &bootstrapv1.KubeadmConfigTemplate{}
 	template.Name = name
 	template.Namespace = namespace
 	template.Kind = constants.KubeadmConfigKind + "Template"
 	template.APIVersion = bootstrapv1.GroupVersion.String()
 	template.Spec.Template.Spec.JoinConfiguration = &v1beta1.JoinConfiguration{}
+
 	return template
 }

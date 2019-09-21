@@ -66,10 +66,14 @@ metadata:
   namespace: default
 spec:
   clusterConfiguration:
-    apiServer: {}
+    apiServer:
+      extraArgs:
+        cloud-provider: aws
     certificatesDir: ""
     controlPlaneEndpoint: ""
-    controllerManager: {}
+    controllerManager:
+      extraArgs:
+        cloud-provider: aws
     dns:
       type: ""
     etcd: {}
@@ -84,7 +88,10 @@ spec:
     localAPIEndpoint:
       advertiseAddress: ""
       bindPort: 0
-    nodeRegistration: {}
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+      name: '''{{ ds.meta_data.hostname }}'''
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: AWSMachine
@@ -129,4 +136,7 @@ metadata:
 spec:
   joinConfiguration:
     discovery: {}
-    nodeRegistration: {}
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+      name: '''{{ ds.meta_data.hostname }}'''

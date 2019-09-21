@@ -19,6 +19,7 @@ package capd
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
+	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	infrav1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
 )
 
@@ -53,4 +54,16 @@ func (p Provider) GetInfraMachineTemplate(name, namespace string) generator.Obje
 	template.Kind = constants.DockerMachineKind + "Template"
 	template.APIVersion = infrav1.GroupVersion.String()
 	return template
+}
+
+// SetBootstrapConfigInfraValues does nothing atm
+func (p Provider) SetBootstrapConfigInfraValues(*bootstrapv1.KubeadmConfig) {
+	// do nothing
+	return
+}
+
+// SetBootstrapConfigTemplateInfraValues does nothing atm
+func (p Provider) SetBootstrapConfigTemplateInfraValues(*bootstrapv1.KubeadmConfigTemplate) {
+	// do nothing
+	return
 }
