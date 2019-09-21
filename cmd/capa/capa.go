@@ -17,6 +17,9 @@ limitations under the License.
 package capa
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
@@ -42,6 +45,12 @@ func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	awsMachine.APIVersion = infrav1.GroupVersion.String()
 	awsMachine.Name = name
 	awsMachine.Namespace = namespace
+	// TODO (ashish-amarnath) lookup these values from an map, also avoid per machine values
+	awsMachine.Spec = infrav1.AWSMachineSpec{
+		InstanceType:       strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_EC2_INSTANCE_TYPE}", namespace, name)),
+		IAMInstanceProfile: strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_IAM_INSTANCE_PROFILE}", namespace, name)),
+		SSHKeyName:         "${SSH_KEY_NAME}",
+	}
 	return awsMachine
 }
 

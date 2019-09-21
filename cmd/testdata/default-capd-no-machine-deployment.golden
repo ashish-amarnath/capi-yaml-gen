@@ -14,11 +14,12 @@ metadata:
   name: my-cluster
   namespace: default
 spec:
-  infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-    kind: DockerCluster
-    name: my-cluster
-    namespace: default
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    services:
+      cidrBlocks: []
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DockerMachine
