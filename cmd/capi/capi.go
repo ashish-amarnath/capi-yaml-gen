@@ -44,6 +44,16 @@ func GetCoreCluster(name, namespace string, infraCluster object) *clusterv1.Clus
 	coreCluster.Namespace = namespace
 	coreCluster.APIVersion = clusterv1.GroupVersion.String()
 	coreCluster.Spec.InfrastructureRef = referenceToObjectRef(infraCluster)
+	coreCluster.Spec = clusterv1.ClusterSpec{
+		ClusterNetwork: &clusterv1.ClusterNetwork{
+			Pods: &clusterv1.NetworkRanges{
+				CIDRBlocks: []string{"192.168.0.0/16"},
+			},
+			Services: &clusterv1.NetworkRanges{
+				CIDRBlocks: []string{},
+			},
+		},
+	}
 	return coreCluster
 }
 

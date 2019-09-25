@@ -28,7 +28,7 @@ $ go run main.go generate --controlplane-count 3
 - WorkerMachineCountt: 1
 
 ```(bash)
-$ go run main.go generate --controlplane-count 3 --infrastructure-provider aws
+$ go run main.go generate --control-plane-count 3 --infrastructure-provider aws
 # yaml written to stdout
 ```
 

@@ -16,11 +16,12 @@ metadata:
   name: my-cluster
   namespace: default
 spec:
-  infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-    kind: AWSCluster
-    name: my-cluster
-    namespace: default
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    services:
+      cidrBlocks: []
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: AWSMachine
@@ -30,6 +31,9 @@ metadata:
   namespace: default
 spec:
   ami: {}
+  iamInstanceProfile: ${DEFAULT_CONTROLPLANE-0_AWS_IAM_INSTANCE_PROFILE}
+  instanceType: ${DEFAULT_CONTROLPLANE-0_AWS_EC2_INSTANCE_TYPE}
+  sshKeyName: ${SSH_KEY_NAME}
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Machine
@@ -62,10 +66,14 @@ metadata:
   namespace: default
 spec:
   clusterConfiguration:
-    apiServer: {}
+    apiServer:
+      extraArgs:
+        cloud-provider: aws
     certificatesDir: ""
     controlPlaneEndpoint: ""
-    controllerManager: {}
+    controllerManager:
+      extraArgs:
+        cloud-provider: aws
     dns:
       type: ""
     etcd: {}
@@ -80,7 +88,10 @@ spec:
     localAPIEndpoint:
       advertiseAddress: ""
       bindPort: 0
-    nodeRegistration: {}
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+      name: '''{{ ds.meta_data.hostname }}'''
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: AWSMachine
@@ -90,6 +101,9 @@ metadata:
   namespace: default
 spec:
   ami: {}
+  iamInstanceProfile: ${DEFAULT_WORKER-0_AWS_IAM_INSTANCE_PROFILE}
+  instanceType: ${DEFAULT_WORKER-0_AWS_EC2_INSTANCE_TYPE}
+  sshKeyName: ${SSH_KEY_NAME}
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Machine
@@ -122,4 +136,7 @@ metadata:
 spec:
   joinConfiguration:
     discovery: {}
-    nodeRegistration: {}
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+      name: '''{{ ds.meta_data.hostname }}'''

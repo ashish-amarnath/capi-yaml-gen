@@ -17,8 +17,13 @@ limitations under the License.
 package capa
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
+	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
+	bootstrapv1beta1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
 )
 
@@ -42,6 +47,12 @@ func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	awsMachine.APIVersion = infrav1.GroupVersion.String()
 	awsMachine.Name = name
 	awsMachine.Namespace = namespace
+	// TODO (ashish-amarnath) lookup these values from an map, also avoid per machine values
+	awsMachine.Spec = infrav1.AWSMachineSpec{
+		InstanceType:       strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_EC2_INSTANCE_TYPE}", namespace, name)),
+		IAMInstanceProfile: strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_IAM_INSTANCE_PROFILE}", namespace, name)),
+		SSHKeyName:         "${SSH_KEY_NAME}",
+	}
 	return awsMachine
 }
 
@@ -53,4 +64,47 @@ func (p Provider) GetInfraMachineTemplate(name, namespace string) generator.Obje
 	template.Kind = constants.AWSMachineKind + "Template"
 	template.APIVersion = infrav1.GroupVersion.String()
 	return template
+}
+
+// SetBootstrapConfigInfraValues fills in InfraProvider specific values into the bootstrap config
+func (p Provider) SetBootstrapConfigInfraValues(c *bootstrapv1.KubeadmConfig) {
+	extraArgs := map[string]string{
+		"cloud-provider": "aws",
+	}
+	if c.Spec.InitConfiguration != nil {
+		c.Spec.InitConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
+			Name:             "'{{ ds.meta_data.hostname }}'",
+			KubeletExtraArgs: extraArgs,
+		}
+	} else if c.Spec.JoinConfiguration != nil {
+		c.Spec.JoinConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
+			Name:             "'{{ ds.meta_data.hostname }}'",
+			KubeletExtraArgs: extraArgs,
+		}
+	}
+
+	if c.Spec.ClusterConfiguration != nil {
+		c.Spec.ClusterConfiguration.APIServer = bootstrapv1beta1.APIServer{
+			ControlPlaneComponent: bootstrapv1beta1.ControlPlaneComponent{
+				ExtraArgs: extraArgs,
+			},
+		}
+
+		c.Spec.ClusterConfiguration.ControllerManager = bootstrapv1beta1.ControlPlaneComponent{
+			ExtraArgs: extraArgs,
+		}
+	}
+}
+
+// SetBootstrapConfigTemplateInfraValues fills in InfraProvider specific values into the join configuration
+func (p Provider) SetBootstrapConfigTemplateInfraValues(t *bootstrapv1.KubeadmConfigTemplate) {
+	extraArgs := map[string]string{
+		"cloud-provider": "aws",
+	}
+	if t.Spec.Template.Spec.JoinConfiguration != nil {
+		t.Spec.Template.Spec.JoinConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
+			Name:             "'{{ ds.meta_data.hostname }}'",
+			KubeletExtraArgs: extraArgs,
+		}
+	}
 }

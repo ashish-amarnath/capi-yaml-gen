@@ -13,12 +13,12 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/sys v0.0.0-20190710143415-6ec70d6a5542 // indirect
-	golang.org/x/tools v0.0.0-20190312170243-e65039ee4138 // indirect
 	k8s.io/api v0.0.0-20190711103429-37c3b8b1ca65
 	k8s.io/apimachinery v0.0.0-20190711103026-7bf792636534
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	sigs.k8s.io/cluster-api v0.0.0-20190830205410-af7f7d74e93b
-	sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm v0.0.0-20190830202805-e3b2bcf70c84
-	sigs.k8s.io/cluster-api-provider-aws v0.3.4-0.20190830203004-f748de96b794
-	sigs.k8s.io/cluster-api-provider-docker v0.1.2-0.20190830184406-5931c16142d3
+	sigs.k8s.io/cluster-api v0.2.3-0.20190920220726-2b0b75ef2cc5
+	sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm v0.1.1-0.20190919144501-b7c1ea3d99f2
+	sigs.k8s.io/cluster-api-provider-aws v0.4.1-0.20190916225024-9dc57fdea283
+	sigs.k8s.io/cluster-api-provider-docker v0.2.1-0.20190918183731-8dc38744ec02
+	sigs.k8s.io/kustomize v2.0.3+incompatible // indirect
 )

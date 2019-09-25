@@ -71,6 +71,7 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 		bsConfigName := fmt.Sprintf("%s-config", strings.ToLower(machineName))
 		bsConfig := p.bootstrapProvider.GetConfig(bsConfigName, p.clusterNamespace, p.isControlPlane, i)
 		infraMachine := p.infraProvider.GetInfraMachine(machineName, p.clusterNamespace)
+		p.infraProvider.SetBootstrapConfigInfraValues(bsConfig)
 
 		out = append(out, infraMachine)
 		// TODO get rid of if/else
@@ -84,10 +85,11 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 	return out, nil
 }
 
-func configuredMachineDeployment(params printMachineParams) []runtime.Object {
-	machineTemplate := params.infraProvider.GetInfraMachineTemplate(params.namePrefix, params.clusterNamespace)
-	configTemplate := params.bootstrapProvider.GetConfigTemplate(params.namePrefix, params.clusterNamespace)
-	md := capi.GetCoreMachineDeployment(params.clusterName, params.namePrefix, params.clusterNamespace, params.k8sVersion, int32(params.count), machineTemplate, configTemplate)
+func configuredMachineDeployment(p printMachineParams) []runtime.Object {
+	machineTemplate := p.infraProvider.GetInfraMachineTemplate(p.namePrefix, p.clusterNamespace)
+	configTemplate := p.bootstrapProvider.GetConfigTemplate(p.namePrefix, p.clusterNamespace)
+	p.infraProvider.SetBootstrapConfigTemplateInfraValues(configTemplate)
+	md := capi.GetCoreMachineDeployment(p.clusterName, p.namePrefix, p.clusterNamespace, p.k8sVersion, int32(p.count), machineTemplate, configTemplate)
 	return []runtime.Object{machineTemplate, configTemplate, md}
 }
 
