@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/versioning"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -17,6 +18,9 @@ import (
 
 func Scheme() *runtime.Scheme {
 	myScheme := runtime.NewScheme()
+	if err := v1.AddToScheme(myScheme); err != nil {
+		panic(err)
+	}
 	if err := clusterv1.AddToScheme(myScheme); err != nil {
 		panic(err)
 	}
