@@ -73,12 +73,12 @@ func (p Provider) SetBootstrapConfigInfraValues(c *bootstrapv1.KubeadmConfig) {
 	}
 	if c.Spec.InitConfiguration != nil {
 		c.Spec.InitConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
-			Name:             "'{{ ds.meta_data.hostname }}'",
+			Name:             "{{ ds.meta_data.hostname }}",
 			KubeletExtraArgs: extraArgs,
 		}
 	} else if c.Spec.JoinConfiguration != nil {
 		c.Spec.JoinConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
-			Name:             "'{{ ds.meta_data.hostname }}'",
+			Name:             "{{ ds.meta_data.hostname }}",
 			KubeletExtraArgs: extraArgs,
 		}
 	}
@@ -103,7 +103,7 @@ func (p Provider) SetBootstrapConfigTemplateInfraValues(t *bootstrapv1.KubeadmCo
 	}
 	if t.Spec.Template.Spec.JoinConfiguration != nil {
 		t.Spec.Template.Spec.JoinConfiguration.NodeRegistration = bootstrapv1beta1.NodeRegistrationOptions{
-			Name:             "'{{ ds.meta_data.hostname }}'",
+			Name:             "{{ ds.meta_data.hostname }}",
 			KubeletExtraArgs: extraArgs,
 		}
 	}
