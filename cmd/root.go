@@ -44,6 +44,7 @@ type generateOptions struct {
 	machineDeployment        bool
 	controlplaneMachineCount int
 	workerMachineCount       int
+	allowEmptyEnvVar         bool
 }
 
 // RootCmd returns the root command for capi-yaml-gen tool
@@ -86,6 +87,7 @@ func getGenerateCommand() *cobra.Command {
 	cmd.Flags().IntVarP(&opts.controlplaneMachineCount, "control-plane-count", "m", defaultControlPlaneCount, "Number of control plane machines in the cluster")
 	cmd.Flags().IntVarP(&opts.workerMachineCount, "worker-count", "w", defaultWorkerCount, "Number of worker machines in the cluster")
 
+	cmd.Flags().BoolVarP(&opts.allowEmptyEnvVar, "allow-empty-env-vars", "a", false, "Allow unset environment variables")
 	return cmd
 }
 
