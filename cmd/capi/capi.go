@@ -58,7 +58,7 @@ func GetCoreCluster(name, namespace string, infraCluster object) *clusterv1.Clus
 }
 
 // GetCoreMachine returns a CAPI machine worker object
-func GetCoreMachine(name, namespace, clusterName string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
+func GetCoreMachine(name, namespace, clusterName, version string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
 	coreMachine := &clusterv1.Machine{}
 	coreMachine.APIVersion = clusterv1.GroupVersion.String()
 	coreMachine.Name = name
@@ -69,13 +69,14 @@ func GetCoreMachine(name, namespace, clusterName string, bootstrapConfig, infraM
 	coreMachine.SetLabels(labels)
 	coreMachine.Spec.Bootstrap.ConfigRef = referenceToObjectRef(bootstrapConfig)
 	coreMachine.Spec.InfrastructureRef = *referenceToObjectRef(infraMachine)
+	coreMachine.Spec.Version = &version
 	return coreMachine
 }
 
 // GetCoreControlPlaneMachine returns a cluster-api machine that identifies as a
 // control plane node
-func GetCoreControlPlaneMachine(name, namespace, clusterName string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
-	machine := GetCoreMachine(name, namespace, clusterName, bootstrapConfig, infraMachine)
+func GetCoreControlPlaneMachine(name, namespace, clusterName, version string, bootstrapConfig, infraMachine object) *clusterv1.Machine {
+	machine := GetCoreMachine(name, namespace, clusterName, version, bootstrapConfig, infraMachine)
 	machine.Labels[clusterv1.MachineControlPlaneLabelName] = "true"
 	return machine
 }
