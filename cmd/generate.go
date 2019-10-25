@@ -76,9 +76,9 @@ func configuredMachines(p printMachineParams) ([]runtime.Object, error) {
 		out = append(out, infraMachine)
 		// TODO get rid of if/else
 		if p.isControlPlane {
-			out = append(out, capi.GetCoreControlPlaneMachine(machineName, p.clusterNamespace, p.clusterName, bsConfig, infraMachine))
+			out = append(out, capi.GetCoreControlPlaneMachine(machineName, p.clusterNamespace, p.clusterName, p.k8sVersion, bsConfig, infraMachine))
 		} else {
-			out = append(out, capi.GetCoreMachine(machineName, p.clusterNamespace, p.clusterName, bsConfig, infraMachine))
+			out = append(out, capi.GetCoreMachine(machineName, p.clusterNamespace, p.clusterName, p.k8sVersion, bsConfig, infraMachine))
 		}
 		out = append(out, bsConfig)
 	}
