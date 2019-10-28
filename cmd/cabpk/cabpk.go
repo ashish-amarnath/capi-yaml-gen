@@ -19,8 +19,8 @@ package cabpk
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 
-	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
-	"sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/kubeadm/v1beta1"
+	bootstrapv1 "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha2"
+	"sigs.k8s.io/cluster-api/bootstrap/kubeadm/types/v1beta1"
 )
 
 // Provider kubeadm implementation of BootstrapProvider

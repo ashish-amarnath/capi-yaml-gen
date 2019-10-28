@@ -19,8 +19,8 @@ package capd
 import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
-	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
-	infrav1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
+	bootstrapv1 "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha2"
+	infrav1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1alpha2"
 )
 
 // Provider CAPD implementation of InfrastructureProvider
