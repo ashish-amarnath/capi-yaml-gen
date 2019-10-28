@@ -9,10 +9,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/versioning"
 	"k8s.io/client-go/kubernetes/scheme"
-	kubeadmv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
 	awsv1 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha2"
-	dockerv1 "sigs.k8s.io/cluster-api-provider-docker/api/v1alpha2"
+	dockerv1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1alpha2"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	kubeadmv1 "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha2"
 )
 
 func Scheme() *runtime.Scheme {
