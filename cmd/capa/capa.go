@@ -17,9 +17,6 @@ limitations under the License.
 package capa
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/constants"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 	bootstrapv1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha2"
@@ -37,6 +34,8 @@ func (p Provider) GetInfraCluster(name, namespace string) generator.Object {
 	awsCluster.APIVersion = infrav1.GroupVersion.String()
 	awsCluster.Name = name
 	awsCluster.Namespace = namespace
+	awsCluster.Spec.Region = "${REGION}"
+	awsCluster.Spec.SSHKeyName = "${SSH_KEY_NAME}"
 	return awsCluster
 }
 
@@ -47,10 +46,9 @@ func (p Provider) GetInfraMachine(name, namespace string) generator.Object {
 	awsMachine.APIVersion = infrav1.GroupVersion.String()
 	awsMachine.Name = name
 	awsMachine.Namespace = namespace
-	// TODO (ashish-amarnath) lookup these values from an map, also avoid per machine values
 	awsMachine.Spec = infrav1.AWSMachineSpec{
-		InstanceType:       strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_EC2_INSTANCE_TYPE}", namespace, name)),
-		IAMInstanceProfile: strings.ToUpper(fmt.Sprintf("${%s_%s_AWS_IAM_INSTANCE_PROFILE}", namespace, name)),
+		InstanceType:       "${CONTROL_PLANE_INSTANCE_TYPE}",
+		IAMInstanceProfile: "control-plane.cluster-api-provider-aws.sigs.k8s.io",
 		SSHKeyName:         "${SSH_KEY_NAME}",
 	}
 	return awsMachine
@@ -63,6 +61,9 @@ func (p Provider) GetInfraMachineTemplate(name, namespace string) generator.Obje
 	template.Namespace = namespace
 	template.Kind = constants.AWSMachineKind + "Template"
 	template.APIVersion = infrav1.GroupVersion.String()
+	template.Spec.Template.Spec.InstanceType = "${MACHINE_DEPLOYMENT_INSTANCE_TYPE}"
+	template.Spec.Template.Spec.IAMInstanceProfile = "nodes.cluster-api-provider-aws.sigs.k8s.io"
+	template.Spec.Template.Spec.SSHKeyName = "${SSH_KEY_NAME}"
 	return template
 }
 
@@ -106,5 +107,14 @@ func (p Provider) SetBootstrapConfigTemplateInfraValues(t *bootstrapv1.KubeadmCo
 			Name:             "{{ ds.meta_data.hostname }}",
 			KubeletExtraArgs: extraArgs,
 		}
+	}
+}
+
+func (p Provider) GetEnvironmentVariables() map[string]string {
+	return map[string]string{
+		"SSH_KEY_NAME":                     "default",
+		"CONTROL_PLANE_INSTANCE_TYPE":      "t2.medium",
+		"MACHINE_DEPLOYMENT_INSTANCE_TYPE": "t2.medium",
+		"REGION":                           "us-west-2",
 	}
 }

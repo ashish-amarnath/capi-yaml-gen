@@ -35,6 +35,7 @@ type InfrastructureProvider interface {
 	GetInfraMachineTemplate(name, namespace string) Object
 	SetBootstrapConfigInfraValues(*bootstrapv1.KubeadmConfig)
 	SetBootstrapConfigTemplateInfraValues(*bootstrapv1.KubeadmConfigTemplate)
+	GetEnvironmentVariables() map[string]string
 }
 
 // BootstrapProvider interface for bootstrap providers

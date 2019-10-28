@@ -67,3 +67,7 @@ func (p Provider) SetBootstrapConfigTemplateInfraValues(*bootstrapv1.KubeadmConf
 	// do nothing
 	return
 }
+
+func (p Provider) GetEnvironmentVariables() map[string]string {
+	return map[string]string{}
+}
