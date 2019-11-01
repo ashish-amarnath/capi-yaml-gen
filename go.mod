@@ -16,10 +16,9 @@ require (
 	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
 	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cluster-bootstrap v0.0.0-20190711112844-b7409fb13d1b // indirect
-	sigs.k8s.io/cluster-api v0.2.6-0.20191028180044-4e878af0247a
-	sigs.k8s.io/cluster-api-provider-aws v0.4.3-0.20191026015723-d8deb7eed0a8
-	sigs.k8s.io/cluster-api/test/infrastructure/docker v0.0.0-20191028180044-4e878af0247a
+	sigs.k8s.io/cluster-api v0.2.6-0.20191031173438-6f77ca5bd696
+	sigs.k8s.io/cluster-api-provider-aws v0.4.3-0.20191024155312-af5c36445248
+	sigs.k8s.io/cluster-api/test/infrastructure/docker v0.0.0-20191028171043-098155a9501c
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190918200256-06eb1244587a

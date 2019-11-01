@@ -16,9 +16,6 @@ limitations under the License.
 package constants
 
 const (
-	CoreClusterKind = "Cluster"
-	CoreMachineKind = "Machine"
-
 	DockerClusterKind = "DockerCluster"
 	DockerMachineKind = "DockerMachine"
 

@@ -7,7 +7,7 @@ metadata:
   namespace: default
 spec: {}
 ---
-apiVersion: cluster.x-k8s.io/v1alpha2
+apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
   creationTimestamp: null
@@ -34,7 +34,7 @@ metadata:
   namespace: default
 spec: {}
 ---
-apiVersion: cluster.x-k8s.io/v1alpha2
+apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Machine
 metadata:
   creationTimestamp: null
@@ -50,12 +50,12 @@ spec:
       kind: KubeadmConfig
       name: controlplane-0-config
       namespace: default
+  clusterName: my-cluster
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
     kind: DockerMachine
     name: controlplane-0
     namespace: default
-  metadata: {}
   version: v1.15.3
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
@@ -94,7 +94,7 @@ metadata:
   namespace: default
 spec: {}
 ---
-apiVersion: cluster.x-k8s.io/v1alpha2
+apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Machine
 metadata:
   creationTimestamp: null
@@ -109,12 +109,12 @@ spec:
       kind: KubeadmConfig
       name: worker-0-config
       namespace: default
+  clusterName: my-cluster
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
     kind: DockerMachine
     name: worker-0
     namespace: default
-  metadata: {}
   version: v1.15.3
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
