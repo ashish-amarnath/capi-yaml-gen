@@ -30,6 +30,7 @@ func TestGoldenFiles(t *testing.T) {
 				controlplaneMachineCount: defaultControlPlaneCount,
 				workerMachineCount:       defaultWorkerCount,
 				machineDeployment:        false,
+				allowEmptyEnvVar:         true,
 			},
 		},
 		{
@@ -44,6 +45,7 @@ func TestGoldenFiles(t *testing.T) {
 				controlplaneMachineCount: defaultControlPlaneCount,
 				workerMachineCount:       defaultWorkerCount,
 				machineDeployment:        false,
+				allowEmptyEnvVar:         true,
 			},
 		},
 		{
@@ -58,6 +60,7 @@ func TestGoldenFiles(t *testing.T) {
 				controlplaneMachineCount: defaultControlPlaneCount,
 				workerMachineCount:       defaultWorkerCount,
 				machineDeployment:        true,
+				allowEmptyEnvVar:         true,
 			},
 		},
 	}

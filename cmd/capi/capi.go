@@ -19,7 +19,7 @@ package capi
 import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 )
 
 type object interface {
@@ -64,12 +64,13 @@ func GetCoreMachine(name, namespace, clusterName, version string, bootstrapConfi
 	coreMachine.Name = name
 	coreMachine.Namespace = namespace
 	labels := map[string]string{
-		clusterv1.MachineClusterLabelName: clusterName,
+		clusterv1.ClusterLabelName: clusterName,
 	}
 	coreMachine.SetLabels(labels)
 	coreMachine.Spec.Bootstrap.ConfigRef = referenceToObjectRef(bootstrapConfig)
 	coreMachine.Spec.InfrastructureRef = *referenceToObjectRef(infraMachine)
 	coreMachine.Spec.Version = &version
+	coreMachine.Spec.ClusterName = clusterName
 	return coreMachine
 }
 
@@ -83,17 +84,21 @@ func GetCoreControlPlaneMachine(name, namespace, clusterName, version string, bo
 
 // GetCoreMachineDeployment returns a cluster-api machine deployment object
 func GetCoreMachineDeployment(clusterName, name, namespace, version string, replicas int32, machineTemplate, bootstrapConfigTemplate object) *clusterv1.MachineDeployment {
+	labels := map[string]string{
+		clusterv1.ClusterLabelName: clusterName,
+	}
+
 	dep := &clusterv1.MachineDeployment{}
 	dep.Name = name
 	dep.Namespace = namespace
 	dep.Spec.Replicas = &replicas
+	dep.Spec.ClusterName = clusterName
+	dep.Labels = labels
 
-	labels := map[string]string{
-		clusterv1.MachineClusterLabelName: clusterName,
-	}
 	dep.Spec.Selector.MatchLabels = labels
 	dep.Spec.Template.ObjectMeta.Labels = labels
 	dep.Spec.Template.Spec.Version = &version
+	dep.Spec.Template.Spec.ClusterName = clusterName
 
 	// Set the machine template
 	dep.Spec.Template.Spec.InfrastructureRef.Name = machineTemplate.GetName()

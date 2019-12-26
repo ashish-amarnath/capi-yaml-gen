@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/cabpk"
@@ -112,10 +113,30 @@ func runGenerateCommand(opts generateOptions, stdout io.Writer) error {
 		return err
 	}
 
+	// check for env var
+	if !opts.allowEmptyEnvVar {
+		ev := ip.GetEnvironmentVariables()
+		for envVar := range ev {
+			if os.Getenv(envVar) == "" {
+				continue
+			}
+			delete(ev, envVar)
+		}
+		if len(ev) > 0 {
+			fmt.Println("Consider setting these default values and rerunning.")
+			fmt.Println("If you do not want to interpolate the values, rerun with the --allow-empty-env-vars flag.")
+			fmt.Println()
+			for envVar, defaultValue := range ev {
+				fmt.Printf("export %s=%s\n", envVar, defaultValue)
+			}
+			return nil
+		}
+	}
+  
 	if opts.clusterNamespace != defaultNamespace {
 		items = append(items, getNamespace(opts.clusterNamespace))
 	}
-
+  
 	infraCluster := ip.GetInfraCluster(opts.clusterName, opts.clusterNamespace)
 
 	coreCluster := capi.GetCoreCluster(opts.clusterName, opts.clusterNamespace, infraCluster)
@@ -163,7 +184,15 @@ func runGenerateCommand(opts generateOptions, stdout io.Writer) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(stdout, string(b))
+		fmt.Fprintln(stdout, os.Expand(string(b), envFn))
 	}
 	return nil
+}
+
+func envFn(envvar string) string {
+	val := os.Getenv(envvar)
+	if val == "" {
+		return fmt.Sprintf("${%s}", envvar)
+	}
+	return val
 }
