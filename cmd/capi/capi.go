@@ -84,15 +84,17 @@ func GetCoreControlPlaneMachine(name, namespace, clusterName, version string, bo
 
 // GetCoreMachineDeployment returns a cluster-api machine deployment object
 func GetCoreMachineDeployment(clusterName, name, namespace, version string, replicas int32, machineTemplate, bootstrapConfigTemplate object) *clusterv1.MachineDeployment {
+	labels := map[string]string{
+		clusterv1.ClusterLabelName: clusterName,
+	}
+
 	dep := &clusterv1.MachineDeployment{}
 	dep.Name = name
 	dep.Namespace = namespace
 	dep.Spec.Replicas = &replicas
 	dep.Spec.ClusterName = clusterName
+	dep.Labels = labels
 
-	labels := map[string]string{
-		clusterv1.ClusterLabelName: clusterName,
-	}
 	dep.Spec.Selector.MatchLabels = labels
 	dep.Spec.Template.ObjectMeta.Labels = labels
 	dep.Spec.Template.Spec.Version = &version
