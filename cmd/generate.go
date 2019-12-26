@@ -30,6 +30,7 @@ import (
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/generator"
 	"github.com/ashish-amarnath/capi-yaml-gen/cmd/serialize"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -94,6 +95,13 @@ func configuredMachineDeployment(p printMachineParams) []runtime.Object {
 	return []runtime.Object{machineTemplate, configTemplate, md}
 }
 
+func getNamespace(name string) runtime.Object {
+	ns := v1.Namespace{}
+	ns.Name = name
+
+	return ns.DeepCopyObject()
+}
+
 func runGenerateCommand(opts generateOptions, stdout io.Writer) error {
 	items := make([]runtime.Object, 0)
 	ip, err := getInfraProvider(opts.infraProvider)
@@ -124,6 +132,11 @@ func runGenerateCommand(opts generateOptions, stdout io.Writer) error {
 			return nil
 		}
 	}
+  
+	if opts.clusterNamespace != defaultNamespace {
+		items = append(items, getNamespace(opts.clusterNamespace))
+	}
+  
 	infraCluster := ip.GetInfraCluster(opts.clusterName, opts.clusterNamespace)
 
 	coreCluster := capi.GetCoreCluster(opts.clusterName, opts.clusterNamespace, infraCluster)
