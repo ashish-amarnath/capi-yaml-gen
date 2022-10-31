@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/google/go-cmp v0.3.1
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
 	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
